@@ -1,65 +1,112 @@
-import Image from "next/image";
+"use client";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import MonthlySummary from "./components/MonthlySummary";
+import DayEntryModal from "./components/DayEntryModal";
+import { useEffect, useRef, useState, useMemo } from "react";
 
-export default function Home() {
+interface CalendarEvent {
+  date: string;
+  totalCost: number;
+  hasMess: boolean;
+  hasOutside: boolean;
+}
+
+export default function CalendarPage() {
+  const [month, setMonth] = useState<string | null>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [summary, setSummary] = useState({
+    messTotal: 0,
+    outsideTotal: 0,
+    grandTotal: 0
+  });
+  const [dateSelected, setDateSelected] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const isFirstRender = useRef(true);
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    if (!month) return;
+    
+    fetch(`/api/food-entry?month=${month}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setEvents(data.entries || []);
+        setSummary(data.summary || { messTotal: 0, outsideTotal: 0, grandTotal: 0 });
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, [month, refreshKey]);
+
+  const formattedEvents = useMemo(() => {
+    return events.map((e) => {
+    let bgColor = "#22c55e"; // green
+
+    if (e.hasOutside && e.hasMess) bgColor = "#f59e0b"; // orange
+    else if (e.hasOutside) bgColor = "#ef4444"; // red
+
+    return {
+      title: `₹${e.totalCost}`,
+      start: e.date,
+      allDay: true,
+      backgroundColor: bgColor,
+      borderColor: bgColor
+    };
+  });
+  }, [events]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-semibold text-white">Mess Food Tracker</h1>
+      {isModalOpen && dateSelected && (
+        <DayEntryModal
+          date={dateSelected}
+          onClose={() => setIsModalOpen(false)}
+          onSave={() => {
+            setIsModalOpen(false);
+            setMonth((prev) => prev);
+            setRefreshKey((prev) => prev+1)
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
+      <MonthlySummary summary={summary} />
+      <FullCalendar
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        initialDate={new Date()}
+        events={formattedEvents}
+        validRange={() => ({
+          start: "2000-01-01"
+        })}
+        datesSet={(info) => {
+          // Use the view's active start date (the actual month being viewed)
+          // not currentStart (which includes previous month's days)
+          const viewDate = info.view.calendar.getDate();
+          const newMonth = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}`;
+          
+          console.log("datesSet triggered - viewDate:", viewDate, "newMonth:", newMonth);
+          
+          // Prevent double-trigger on mount (StrictMode)
+          if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+          }
+          
+          setMonth((prev) => (prev === newMonth ? prev : newMonth));
+        }}
+        dateClick={(info) => {
+          console.log("Clicked date:", info.dateStr);
+          setDateSelected(info.dateStr);
+          setIsModalOpen(true);
+        }}
+        height="auto"
+      />
     </div>
   );
 }
