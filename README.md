@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍽️ Mess Food & Expense Tracker
 
-## Getting Started
+A full-stack web application to track daily food consumption from a mess and outside sources, calculate monthly expenses automatically, and visualize spending using a calendar-based interface.
 
-First, run the development server:
+Built for real-world usage with dynamic pricing, accurate billing, and a clean UX.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Live Demo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+👉 [https://your-vercel-app-url.vercel.app](https://mess-tracker-neon.vercel.app)  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+### Calendar-Based Food Logging
+- Track **Breakfast, Lunch, Dinner** for each day
+- Log food source:
+  - Mess
+  - Outside
+  - Not taken
+- Click any date to **add or edit entries**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Automatic Cost Calculation
+- Mess food prices calculated **on the backend**
+- Outside food cost entered manually
+- Monthly totals computed automatically
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Monthly Summary
+- Total Mess expense
+- Total Outside expense
+- Grand total for the month
 
-## Deploy on Vercel
+### Visual Indicators
+- 🟢 Green → Mess only
+- 🟠 Orange → Mess + Outside
+- 🔴 Red → Outside only
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Dynamic Mess Pricing
+- Mess prices stored in database
+- Prices can change over time using an **effective date**
+- Old records remain accurate (no retroactive changes)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Smart Design
+- One entry per day
+- Backend-driven billing logic
+- No frontend price manipulation
+
+---
+
+## Tech Stack
+
+### Frontend
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- FullCalendar
+
+### Backend
+- Next.js API Routes
+- MongoDB
+- Mongoose
+
+### Deployment
+- Vercel
+- MongoDB Atlas
