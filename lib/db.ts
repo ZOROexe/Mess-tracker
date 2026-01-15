@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-const MONGO_URI = process.env.MONGO_URI as string;
-
-if (!MONGO_URI) {
-    throw new Error("Please define MONGODB_URI in .env.local");
-}
-
 interface MongoCache {
     conn: typeof mongoose | null;
     promise: Promise<typeof mongoose> | null;
