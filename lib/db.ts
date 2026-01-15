@@ -21,6 +21,13 @@ if (!cached) {
 }
 
 export default async function connectDB() {
+
+  const MONGO_URI = process.env.MONGO_URI;
+
+  if (!MONGO_URI) {
+    throw new Error("MONGO_URI is not defined");
+  }
+
   if (cached!.conn) return cached!.conn;
 
   if (!cached!.promise) {
