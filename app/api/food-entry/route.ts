@@ -10,9 +10,9 @@ export async function POST(req: NextRequest) {
 
         const body = (await req.json()) as Omit<FoodEntry, 'totalCost'>;
 
-        const breakfast = normalizeMeal("breakfast", body.breakfast);
-        const lunch = normalizeMeal("lunch", body.lunch);
-        const dinner = normalizeMeal("dinner", body.dinner);
+        const breakfast = await normalizeMeal("breakfast", body.breakfast, body.date);
+        const lunch = await normalizeMeal("lunch", body.lunch, body.date);
+        const dinner = await normalizeMeal("dinner", body.dinner, body.date);
         const totalCost = breakfast.cost + lunch.cost + dinner.cost;
 
         const entry = await FoodEntryModel.findOneAndUpdate({ date: body.date }, { breakfast, lunch, dinner, totalCost }, { upsert: true, new: true });
@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
         return Response.json(entry, {status: 200})
     } catch (error) {
         console.error(error);
-    return Response.json(
-        { message: "Failed to save food entry" },
-        { status: 500 }
+        return Response.json(
+            { message: "Failed to save food entry" },
+            { status: 500 }
         );
     }
 

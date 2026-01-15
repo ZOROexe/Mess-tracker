@@ -105,6 +105,14 @@ export default function CalendarPage() {
           setDateSelected(info.dateStr);
           setIsModalOpen(true);
         }}
+        eventClick={(info) => {
+          info.jsEvent.preventDefault();
+          info.jsEvent.stopPropagation();
+
+          const date = info.event.startStr.slice(0, 10);
+          setDateSelected(date);
+          setIsModalOpen(true);
+        }}
         height="auto"
       />
     </div>

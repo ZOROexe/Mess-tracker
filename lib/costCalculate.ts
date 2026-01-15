@@ -1,14 +1,17 @@
-import { MESS_PRICES } from "@/constants/prices";
-import { MealEntry } from "@/types/food";
+import { getActiveMessPricing } from "./getActivePricing";
   
-export function normalizeMeal(
+export async function normalizeMeal(
   mealType: "breakfast" | "lunch" | "dinner",
-  meal: { source: "mess" | "outside" | "none"; cost?: number }
+  meal: { source: "mess" | "outside" | "none"; cost?: number }, 
+  date: string
 ) {
+
+  const pricing = await getActiveMessPricing(date)
+
   if (meal.source === "mess") {
     return {
       source: "mess",
-      cost: MESS_PRICES[mealType]
+      cost: pricing[mealType]
     };
   }
 

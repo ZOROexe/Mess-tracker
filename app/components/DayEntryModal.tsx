@@ -21,20 +21,40 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
     lunch: { source: "none" },
     dinner: { source: "none" }
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
     
     useEffect(() => {
-    fetch(`/api/food-entry?date=${date}`)
-      .then((res) => res.json())
-      .then((data) => {
-          if (!data) return;
-          console.log(data)
+      async function setEntry() {
+        setError(null);
+        setLoading(true);
 
-        setMeals({
-          breakfast: data.breakfast,
-          lunch: data.lunch,
-          dinner: data.dinner
-        });
-      });
+        try {
+          const res = await fetch(`/api/food-entry?date=${date}`);
+          console.log(res)
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch food entry");
+          }
+
+          const data = await res.json();
+
+          if (data) {
+            console.log(data)
+            setMeals({
+              breakfast: data.breakfast,
+              lunch: data.lunch,
+              dinner: data.dinner
+            });
+          }
+        } catch (error) {
+          setError("Could not load food entry");
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      }
+      setEntry();
   }, [date]);
 
   function updateMeal(
@@ -48,19 +68,33 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
   }
 
   async function handleSave() {
-    await fetch("/api/food-entry", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date,
-        breakfast: meals.breakfast,
-        lunch: meals.lunch,
-        dinner: meals.dinner
-      })
-    });
-
-    onSave();
+      setLoading(true);
+      setError(null);
+      try {
+          const res = await fetch("/api/food-entry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date,
+            breakfast: meals.breakfast,
+            lunch: meals.lunch,
+            dinner: meals.dinner
+          })
+          });
+        if (!res.ok) {
+          console.log(res);
+          throw new Error("Failed to save food entry");
+          }
+        
+        onSave();
+      } catch (error) {
+        setError("Failed to set prices")
+      } finally{
+        setLoading(false);
+    }
+    
   }
+
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -68,6 +102,13 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
         <h2 className="text-lg font-semibold">
           Food Entry – {date}
         </h2>
+        {loading && (
+          <p className="text-sm text-gray-500">Loading...</p>
+        )}
+
+        {error && (
+          <p className="text-sm text-red-600">{error}</p>
+        )}
 
         {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
           <div key={meal} className="space-y-2">
@@ -92,7 +133,7 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
                 className="w-full border rounded p-2"
                 value={meals[meal].cost ?? ''}
                 onChange={(e) =>
-                  updateMeal(meal, { cost: Number(e.target.value) })
+                  updateMeal(meal, { cost: e.target.value === "" ? undefined : Number(e.target.value) })
                 }
               />
             )}
@@ -102,15 +143,18 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
         <div className="flex justify-end gap-3 pt-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 border rounded"
+            disabled={loading}
+            className="px-4 py-2 border rounded disabled:opacity-50"
           >
             Cancel
           </button>
+
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-black text-white rounded"
+            disabled={loading}
+            className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
           >
-            Save
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
