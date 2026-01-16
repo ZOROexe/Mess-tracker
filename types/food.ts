@@ -12,3 +12,8 @@ export interface FoodEntry {
   dinner: MealEntry;
   totalCost: number;
 }
+
+export interface MealState {
+  source: MealSource;
+  cost?: number;
+}

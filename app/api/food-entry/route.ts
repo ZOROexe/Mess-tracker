@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
         const date = req.nextUrl.searchParams.get("date");
         if (date) {
-            const entry = await FoodEntryModel.findOne({ date });
+            const entry = await FoodEntryModel.findOne({ date }).lean();
             return Response.json(entry || null);
         }
 

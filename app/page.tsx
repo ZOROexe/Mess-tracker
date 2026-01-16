@@ -4,7 +4,9 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MonthlySummary from "./components/MonthlySummary";
 import DayEntryModal from "./components/DayEntryModal";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FetchMonthlyFood } from "@/lib/api";
+import { useRef, useState, useMemo } from "react";
 
 interface CalendarEvent {
   date: string;
@@ -18,31 +20,24 @@ export default function CalendarPage() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
-  
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [summary, setSummary] = useState({
-    messTotal: 0,
-    outsideTotal: 0,
-    grandTotal: 0
-  });
+
   const [dateSelected, setDateSelected] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isFirstRender = useRef(true);
-  const [refreshKey, setRefreshKey] = useState(0)
 
-  useEffect(() => {
-    if (!month) return;
-    
-    fetch(`/api/food-entry?month=${month}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data.entries || []);
-        setSummary(data.summary || { messTotal: 0, outsideTotal: 0, grandTotal: 0 });
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, [month, refreshKey]);
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["month-entry", month],
+    queryFn: () => FetchMonthlyFood(month!),
+    enabled: !!month,
+    staleTime: 600000 //1 min
+  })
+
+  const events: CalendarEvent[] = data?.entries ?? [];
+  const summary = data?.summary ?? {
+    messTotal: 0,
+    outsideTotal: 0,
+    grandTotal: 0
+  };
 
   const formattedEvents = useMemo(() => {
     return events.map((e) => {
@@ -71,8 +66,8 @@ export default function CalendarPage() {
           onSave={() => {
             setIsModalOpen(false);
             setMonth((prev) => prev);
-            setRefreshKey((prev) => prev+1)
           }}
+          month = {month}
         />
       )}
       <MonthlySummary summary={summary} />

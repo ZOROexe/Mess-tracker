@@ -1,61 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MealState } from "@/types/food";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FetchDailyFood, saveFoodEntry } from "@/lib/api";
 
 type MealSource = "none" | "mess" | "outside";
-
-interface MealState {
-  source: MealSource;
-  cost?: number;
-}
 
 interface Props {
   date: string;
   onClose: () => void;
   onSave: () => void;
+  month: string | null;
 }
 
-export default function DayEntryModal({ date, onClose, onSave }: Props) {
+export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
   const [meals, setMeals] = useState<Record<string, MealState>>({
     breakfast: { source: "none" },
     lunch: { source: "none" },
     dinner: { source: "none" }
   });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-    
-    useEffect(() => {
-      async function setEntry() {
-        setError(null);
-        setLoading(true);
+  const queryClient = useQueryClient();
 
-        try {
-          const res = await fetch(`/api/food-entry?date=${date}`);
-          console.log(res)
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ['day-entry', date],
+    queryFn: () => FetchDailyFood(date!),
+    enabled: !!date,
+    staleTime: 60_000 //1 min
+  })
 
-          if (!res.ok) {
-            throw new Error("Failed to fetch food entry");
-          }
-
-          const data = await res.json();
-
-          if (data) {
-            console.log(data)
-            setMeals({
-              breakfast: data.breakfast,
-              lunch: data.lunch,
-              dinner: data.dinner
-            });
-          }
-        } catch (error) {
-          setError("Could not load food entry");
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
+  const { mutate, isPending, isError, error: saveError } = useMutation({
+      mutationFn: saveFoodEntry,
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["month-entry", month],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["day-entry", date],
+        })
+      },
+    onError: (err) => {
+        console.error("Save failed:", err);
       }
-      setEntry();
-  }, [date]);
+    })
+
+  useEffect(() => {
+    if (!data) return;
+
+    setMeals({
+      breakfast: data.breakfast,
+      lunch: data.lunch,
+      dinner: data.dinner
+    });
+  }, [data]);
 
   function updateMeal(
     meal: "breakfast" | "lunch" | "dinner",
@@ -68,31 +65,14 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
   }
 
   async function handleSave() {
-      setLoading(true);
-      setError(null);
-      try {
-          const res = await fetch("/api/food-entry", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            date,
-            breakfast: meals.breakfast,
-            lunch: meals.lunch,
-            dinner: meals.dinner
-          })
-          });
-        if (!res.ok) {
-          console.log(res);
-          throw new Error("Failed to save food entry");
-          }
-        
-        onSave();
-      } catch (error) {
-        setError("Failed to set prices")
-      } finally{
-        setLoading(false);
+    const payload = {
+      date,
+      breakfast: meals.breakfast,
+      lunch: meals.lunch,
+      dinner: meals.dinner
     }
-    
+    mutate(payload);
+    onSave();
   }
 
 
@@ -102,12 +82,15 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
         <h2 className="text-lg font-semibold">
           Food Entry – {date}
         </h2>
-        {loading && (
+        {isLoading && (
           <p className="text-sm text-gray-500">Loading...</p>
         )}
 
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-red-600">{error.message}</p>
+        )}
+        {saveError && (
+          <p className="text-sm text-red-600">{saveError.message}</p>
         )}
 
         {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
@@ -143,7 +126,7 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
         <div className="flex justify-end gap-3 pt-4">
           <button
             onClick={onClose}
-            disabled={loading}
+            disabled={isLoading}
             className="px-4 py-2 border rounded disabled:opacity-50"
           >
             Cancel
@@ -151,10 +134,10 @@ export default function DayEntryModal({ date, onClose, onSave }: Props) {
 
           <button
             onClick={handleSave}
-            disabled={loading}
+            disabled={isLoading}
             className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
           >
-            {loading ? "Saving..." : "Save"}
+            {isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
