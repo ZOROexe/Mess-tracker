@@ -3,16 +3,25 @@ import connectDB from "@/lib/db";
 import FoodEntryModel from "@/models/foodEntry";
 import { FoodEntry } from "@/types/food";
 import { NextRequest } from "next/server";
+import { isEmpty } from "@/lib/costCalculate";
+import { MealEntry } from "@/types/food";
 
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
 
         const body = (await req.json()) as Omit<FoodEntry, 'totalCost'>;
-
+        
         const breakfast = await normalizeMeal("breakfast", body.breakfast, body.date);
         const lunch = await normalizeMeal("lunch", body.lunch, body.date);
         const dinner = await normalizeMeal("dinner", body.dinner, body.date);
+
+        if (isEmpty(breakfast, lunch, dinner)) {
+            const del = await FoodEntryModel.deleteOne({ date: body.date });
+            console.log(del);
+            return Response.json({Deleted: true})
+        }
+
         const totalCost = breakfast.cost + lunch.cost + dinner.cost;
 
         const entry = await FoodEntryModel.findOneAndUpdate({ date: body.date }, { breakfast, lunch, dinner, totalCost }, { upsert: true, new: true });

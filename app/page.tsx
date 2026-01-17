@@ -1,10 +1,12 @@
 "use client";
+import Link from "next/link";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MonthlySummary from "./components/MonthlySummary";
 import DayEntryModal from "./components/DayEntryModal";
-import { useQuery } from "@tanstack/react-query";
+import { CalendarSkeleton } from "./components/Skeletons";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FetchMonthlyFood } from "@/lib/api";
 import { useRef, useState, useMemo } from "react";
 
@@ -20,6 +22,7 @@ export default function CalendarPage() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+  const queryClient = useQueryClient();
 
   const [dateSelected, setDateSelected] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,6 +32,9 @@ export default function CalendarPage() {
     queryKey: ["month-entry", month],
     queryFn: () => FetchMonthlyFood(month!),
     enabled: !!month,
+    initialData: () => {
+      return queryClient.getQueryData(["month-entry", month])
+    },
     staleTime: 600000 //1 min
   })
 
@@ -55,10 +61,22 @@ export default function CalendarPage() {
     };
   });
   }, [events]);
-
+  if (isLoading && !data) {
+    return (
+      <div className="py-6 space-y-6">
+        <h1 className="px-6 text-2xl font-semibold text-white">Mess Food Tracker</h1>
+        <CalendarSkeleton />
+      </div>
+    )
+  }
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold text-white">Mess Food Tracker</h1>
+      <div className="flex justify-between">
+        <h1 className="text-2xl font-semibold text-white">Mess Food Tracker</h1>
+        <button className="bg-blue-500 px-3 py-2 rounded-2xl">
+          <Link href='/settings/mess-pricing'>Mess Pricing</Link>
+        </button>
+      </div>
       {isModalOpen && dateSelected && (
         <DayEntryModal
           date={dateSelected}

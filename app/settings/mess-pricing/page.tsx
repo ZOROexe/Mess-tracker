@@ -1,49 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MessPricingSkeleton } from "@/app/components/Skeletons";
+import { getMessPrice ,saveMessPirce} from "@/lib/api";
+import { MealPrice } from "@/types/food";
 
 export default function MessPricingPage() {
 
-    interface MealPrice {
-        breakfast: number;
-        lunch: number;
-        dinner: number;
-        effectiveFrom: string;
-    }
-
-    const [currentPricing, setCurrentPricing] = useState<MealPrice | null>(null);
     const [form, setForm] = useState({
         breakfast: "",
         lunch: "",
         dinner: "",
         effectiveFrom: ""
     });
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    
-    async function fetchData() {
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await fetch("/api/price-entry");
-            if (!res.ok) {
-                throw new Error("Cannot fetch data!");
-            }
-            const data = await res.json();
-            setCurrentPricing(data);
-        } catch (error) {
-            setError("Could not load food entry");
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }
-    
-    useEffect(() => {
-        fetchData();
-    }, [])
+    const { data, isLoading, isFetching, error } = useQuery({
+        queryKey: ['mess-price'],
+        queryFn: getMessPrice,
+        initialData: () => {
+            return queryClient.getQueryData(["mess-price"])
+        },
+        staleTime: 1000000,
+    })
+
+    const { mutate, isSuccess, isPending, error: saveError } = useMutation({
+        mutationFn: saveMessPirce,
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['mess-price']
+            })
+        },
+        onError: (err) => {
+            console.error("Save failed:", err);
+        },
+    })
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement>
@@ -56,39 +48,30 @@ export default function MessPricingPage() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(false);
-
-        try {
-        const res = await fetch("/api/price-entry", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+        const payload = {
             breakfast: Number(form.breakfast),
             lunch: Number(form.lunch),
             dinner: Number(form.dinner),
             effectiveFrom: form.effectiveFrom
-            })
-        });
-
-        if (!res.ok) {
-            throw new Error("Failed to save pricing");
-        }
-
-        setSuccess(true);
+        };
+        mutate(payload);
         setForm({
             breakfast: "",
             lunch: "",
             dinner: "",
             effectiveFrom: ""
         });
-        fetchData();
-        } catch (err) {
-        setError("Something went wrong. Try again.");
-        } finally {
-        setLoading(false);
-        }
+    }
+
+    if (isFetching) {
+        return (
+            <div className="max-w-md mx-auto p-6 space-y-6">
+                <h1 className="text-2xl font-semibold">
+                    Mess Pricing Settings
+                </h1>
+                <MessPricingSkeleton/>
+            </div>
+        )
     }
 
     return (
@@ -96,14 +79,14 @@ export default function MessPricingPage() {
         <h1 className="text-2xl font-semibold">
             Mess Pricing Settings
         </h1>
-        {currentPricing && (
+        {data && (
             <div className="rounded-lg border p-4 bg-gray-50 space-y-1 text-black">
                 <p className="font-medium">Current Pricing</p>
-                <p>Breakfast: ₹{currentPricing.breakfast}</p>
-                <p>Lunch: ₹{currentPricing.lunch}</p>
-                <p>Dinner: ₹{currentPricing.dinner}</p>
+                <p>Breakfast: ₹{data.breakfast}</p>
+                <p>Lunch: ₹{data.lunch}</p>
+                <p>Dinner: ₹{data.dinner}</p>
                 <p className="text-sm text-gray-500">
-                    Effective from: {currentPricing.effectiveFrom}
+                    Effective from: {data.effectiveFrom}
                 </p>
             </div>
         )}
@@ -139,20 +122,23 @@ export default function MessPricingPage() {
 
             <button
             type="submit"
-            disabled={loading}
+            disabled={isPending}
             className="w-full bg-black text-white py-2 rounded"
             >
-            {loading ? "Saving..." : "Save Pricing"}
+            {isLoading ? "Saving..." : "Save Pricing"}
             </button>
 
-            {success && (
+            {isSuccess && (
             <p className="text-green-600 text-sm">
                 Pricing saved successfully
             </p>
             )}
 
             {error && (
-            <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-600 text-sm">{error.message}</p>
+            )}
+            {saveError && (
+                <p className="text-red-600 text-sm">{saveError.message}</p>
             )}
         </form>
         </div>
