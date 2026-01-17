@@ -17,3 +17,10 @@ export interface MealState {
   source: MealSource;
   cost?: number;
 }
+
+export interface MealPrice {
+    breakfast: number;
+    lunch: number;
+    dinner: number;
+    effectiveFrom: string;
+}

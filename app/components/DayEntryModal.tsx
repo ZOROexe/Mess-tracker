@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MealState } from "@/types/food";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FetchDailyFood, saveFoodEntry } from "@/lib/api";
+import { DayEntryModalSkeleton } from "./Skeletons";
 
 type MealSource = "none" | "mess" | "outside";
 
@@ -75,6 +76,16 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
     onSave();
   }
 
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <h2 className="text-lg font-semibold">
+          Food Entry – {date}
+        </h2>
+        <DayEntryModalSkeleton/>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
