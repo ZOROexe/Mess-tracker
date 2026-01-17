@@ -1,0 +1,15 @@
+name: Warm API
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call health endpoint
+        run: |
+          curl -X GET https://YOUR_APP_URL.vercel.app/api/health \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
