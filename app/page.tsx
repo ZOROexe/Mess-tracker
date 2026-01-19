@@ -5,7 +5,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MonthlySummary from "./components/MonthlySummary";
 import DayEntryModal from "./components/DayEntryModal";
-import { CalendarSkeleton } from "./components/Skeletons";
+import LoginModal from "./components/LoginModal";
+import { CalendarGridSkeleton, SummarySkeleton, DayEntryModalSkeleton } from "./components/Skeletons";
+import AuthButton from "./components/authButton";
+import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FetchMonthlyFood } from "@/lib/api";
 import { useRef, useState, useMemo } from "react";
@@ -24,9 +27,10 @@ export default function CalendarPage() {
   });
   const queryClient = useQueryClient();
 
+  const { data: session } = useSession();
   const [dateSelected, setDateSelected] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isFirstRender = useRef(true);
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["month-entry", month],
@@ -61,23 +65,42 @@ export default function CalendarPage() {
     };
   });
   }, [events]);
-  if (isLoading && !data) {
-    return (
-      <div className="py-6 space-y-6">
-        <h1 className="px-6 text-2xl font-semibold text-white">Mess Food Tracker</h1>
-        <CalendarSkeleton />
-      </div>
-    )
-  }
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold text-white">Mess Food Tracker</h1>
-        <button className="bg-blue-500 px-3 py-2 rounded-2xl">
-          <Link href='/settings/mess-pricing'>Mess Pricing</Link>
-        </button>
+      <div className=" flex flex-col sm:items-center sm:flex-row sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Mess Food Tracker
+          </h1>
+          <p className="text-sm text-gray-400">
+            Track daily meals & monthly spend
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href="/settings/mess-pricing"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition"
+          >
+            Mess Pricing
+          </Link>
+
+          <div className="flex items-center gap-3">
+              {session && (
+              <span className="text-sm text-gray-300 max-w-35 truncate">
+                {session.user?.email}
+              </span>
+            )}
+            <AuthButton />
+          </div>
+        </div>
       </div>
+      {
+        isLoginModalOpen && dateSelected && <LoginModal onPress={() => setLoginModalOpen(false) } onClose={() => setLoginModalOpen(false)} />
+      }
       {isModalOpen && dateSelected && (
+        isLoading ? <DayEntryModalSkeleton/> :
         <DayEntryModal
           date={dateSelected}
           onClose={() => setIsModalOpen(false)}
@@ -88,46 +111,52 @@ export default function CalendarPage() {
           month = {month}
         />
       )}
-      <MonthlySummary summary={summary} />
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        initialDate={new Date()}
-        events={formattedEvents}
-        validRange={() => ({
-          start: "2000-01-01"
-        })}
-        datesSet={(info) => {
-          // Use the view's active start date (the actual month being viewed)
-          // not currentStart (which includes previous month's days)
-          const viewDate = info.view.calendar.getDate();
-          const newMonth = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}`;
-          
-          console.log("datesSet triggered - viewDate:", viewDate, "newMonth:", newMonth);
-          
-          // Prevent double-trigger on mount (StrictMode)
-          if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-          }
-          
-          setMonth((prev) => (prev === newMonth ? prev : newMonth));
-        }}
-        dateClick={(info) => {
-          console.log("Clicked date:", info.dateStr);
-          setDateSelected(info.dateStr);
-          setIsModalOpen(true);
-        }}
-        eventClick={(info) => {
-          info.jsEvent.preventDefault();
-          info.jsEvent.stopPropagation();
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {isFetching ? <SummarySkeleton/> : <MonthlySummary summary={summary} />}
+        
+      </div>
+      <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 border border-white/10">
+          <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={formattedEvents}
+            validRange={() => ({
+              start: "2000-01-01"
+            })}
+            datesSet={(info) => {
+              const start = info.view.currentStart;
+              const newMonth = `${start.getFullYear()}-${String(
+                start.getMonth() + 1
+              ).padStart(2, "0")}`;
 
-          const date = info.event.startStr.slice(0, 10);
-          setDateSelected(date);
-          setIsModalOpen(true);
-        }}
-        height="auto"
-      />
+              setMonth(newMonth);
+            }}
+            dateClick={(info) => {
+              if (!session) {
+                setLoginModalOpen(true);
+                setDateSelected(info.dateStr);
+              } else {
+                console.log("Clicked date:", info.dateStr);
+                setDateSelected(info.dateStr);
+                setIsModalOpen(true);
+              }
+            }}
+            eventClick={(info) => {
+              info.jsEvent.preventDefault();
+              info.jsEvent.stopPropagation();
+
+              const date = info.event.startStr.slice(0, 10);
+              setDateSelected(date);
+              setIsModalOpen(true);
+            }}
+            height="auto"
+        />
+        {isFetching && (
+          <div className="absolute inset-0 z-50 rounded-2xl bg-black/30 backdrop-blur-sm">
+            <CalendarGridSkeleton />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

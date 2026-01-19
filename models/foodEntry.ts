@@ -16,8 +16,7 @@ const MealSchema = new Schema<MealEntry>({
 const FoodEntrySchema = new Schema<FoodEntry>({
     date: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     breakfast: MealSchema,
     lunch: MealSchema,
@@ -25,8 +24,14 @@ const FoodEntrySchema = new Schema<FoodEntry>({
     totalCost: {
       type: Number,
       default: 0
+    },
+    userId: {
+        type: String,
+        required: true
     }
 }, { timestamps: true })
+
+FoodEntrySchema.index({ date: 1, userId: 1 }, { unique: true });
 
 const FoodEntryModel: Model<FoodEntry> = mongoose.models.FoodEntry || mongoose.model<FoodEntry>("FoodEntry", FoodEntrySchema); 
 

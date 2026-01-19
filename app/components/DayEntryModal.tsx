@@ -89,7 +89,8 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4 text-black">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-5 text-black
+                  animate-[scaleIn_0.15s_ease-out]">
         <h2 className="text-lg font-semibold">
           Food Entry – {date}
         </h2>
@@ -105,11 +106,11 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
         )}
 
         {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
-          <div key={meal} className="space-y-2">
+          <div key={meal} className="space-y-4">
             <label className="capitalize font-medium">{meal}</label>
 
             <select
-              className="w-full border rounded p-2"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={meals[meal].source}
               onChange={(e) =>
                 updateMeal(meal, { source: e.target.value as MealSource })
@@ -146,7 +147,7 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
+            className="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition"
           >
             {isPending ? "Saving..." : "Save"}
           </button>

@@ -4,12 +4,16 @@ import FoodEntryModel from "@/models/foodEntry";
 import { FoodEntry } from "@/types/food";
 import { NextRequest } from "next/server";
 import { isEmpty } from "@/lib/costCalculate";
-import { MealEntry } from "@/types/food";
+import { auth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
-
+        const session = await auth();
+        if (!session?.user?.email) {
+            return Response.json({message: "Unauthorised"}, {status: 401})
+        }
+        const userId = session.user.email
         const body = (await req.json()) as Omit<FoodEntry, 'totalCost'>;
         
         const breakfast = await normalizeMeal("breakfast", body.breakfast, body.date);
@@ -24,7 +28,23 @@ export async function POST(req: NextRequest) {
 
         const totalCost = breakfast.cost + lunch.cost + dinner.cost;
 
-        const entry = await FoodEntryModel.findOneAndUpdate({ date: body.date }, { breakfast, lunch, dinner, totalCost }, { upsert: true, new: true });
+        const entry = await FoodEntryModel.findOneAndUpdate(
+            { date: body.date, userId },
+            {
+                $set: {
+                    breakfast,
+                    lunch,
+                    dinner,
+                    totalCost,
+                    userId
+                }
+            },
+            {
+                upsert: true,
+                new: true,
+                runValidators: true
+            }
+        );
 
         return Response.json(entry, {status: 200})
     } catch (error) {
@@ -40,10 +60,14 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     try {
         await connectDB();
-
+        const session = await auth();
+        const userId =session?.user?.email
         const date = req.nextUrl.searchParams.get("date");
         if (date) {
-            const entry = await FoodEntryModel.findOne({ date }).lean();
+            if (!userId) {
+                return Response.json(null, {status: 200});
+            }
+            const entry = await FoodEntryModel.findOne({userId,  date }).lean();
             return Response.json(entry || null);
         }
 
@@ -52,10 +76,25 @@ export async function GET(req: NextRequest) {
             return Response.json({message: "Month is required"}, {status: 400})
         }
 
+        if (!userId) {
+            return Response.json(
+                {
+                summary: {
+                    messTotal: 0,
+                    outsideTotal: 0,
+                    grandTotal: 0
+                },
+                entries: []
+                },
+                { status: 200 }
+            );
+        }
+
         const summary = await FoodEntryModel.aggregate([
         {
             $match: {
-            date: { $regex: `^${month}` }
+                date: { $regex: `^${month}` },
+                userId: userId
             }
         },
         {
@@ -124,7 +163,7 @@ export async function GET(req: NextRequest) {
         ]);
 
         const basicEntries = await FoodEntryModel.find(
-        { date: { $regex: `^${month}` } },
+        {userId,  date: { $regex: `^${month}` } },
         { _id: 0, date: 1, totalCost: 1, breakfast: 1, lunch: 1, dinner: 1 }
         ).sort({ date: 1 });
 

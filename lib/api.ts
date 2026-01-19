@@ -65,8 +65,9 @@ export async function saveMessPirce(payload:MealPrice) {
             body: JSON.stringify(payload)
         });
         if (!res.ok) {
+            const data = await res.json();
             console.log("payload:",payload)
-            throw new Error("Failed to Save daily data");
+            throw new Error(`Failed to Save daily data: ${data?.message}`);
         }
         return res.json();
     } catch (error) {

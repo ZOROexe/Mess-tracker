@@ -16,17 +16,15 @@ export default function MonthlySummary({ summary }: SummaryProps) {
   );
 }
 
-function SummaryCard({
-  label,
-  value
-}: {
-  label: string;
-  value: number;
-}) {
+function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border p-4 bg-white shadow-sm">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-xl font-semibold">₹{value}</p>
+    <div className="rounded-2xl bg-white/90 p-5 text-black shadow-sm hover:shadow-md transition">
+      <p className="text-xs uppercase tracking-wide text-gray-500">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold">
+        ₹{value.toLocaleString()}
+      </p>
     </div>
   );
 }
