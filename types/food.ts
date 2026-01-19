@@ -10,6 +10,7 @@ export interface FoodEntry {
   breakfast: MealEntry;
   lunch: MealEntry;
   dinner: MealEntry;
+  userId: string;
   totalCost: number;
 }
 

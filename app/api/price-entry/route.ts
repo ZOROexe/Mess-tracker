@@ -1,11 +1,12 @@
 import connectDB from "@/lib/db";
 import MessPriceModel from "@/models/messPricing";
 import { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
 export async function GET() {
     try {
         await connectDB();
-
+        
         const pricing = await MessPriceModel.findOne().sort({ effectiveFrom: -1, createdAt: -1 }).lean();
         return Response.json(pricing || null, { status: 200 });
     } catch (error) {
@@ -20,7 +21,11 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         await connectDB();
-
+        const session = await auth();
+        if (!session?.user?.email) {
+            return Response.json({message: "Unauthorised"}, {status: 401})
+        }
+        const userId = session.user.email;
         const body = await req.json();
         const { breakfast, lunch, dinner, effectiveFrom } = body;
 
@@ -32,7 +37,8 @@ export async function POST(req: NextRequest) {
             breakfast,
             lunch,
             dinner,
-            effectiveFrom
+            effectiveFrom,
+            userId
         });
         return Response.json(pricing, { status: 201 });
     } catch (error) {

@@ -5,7 +5,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MonthlySummary from "./components/MonthlySummary";
 import DayEntryModal from "./components/DayEntryModal";
+import LoginModal from "./components/LoginModal";
 import { CalendarSkeleton } from "./components/Skeletons";
+import LogoutButton from "./components/logOutButton";
+import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FetchMonthlyFood } from "@/lib/api";
 import { useRef, useState, useMemo } from "react";
@@ -24,8 +27,10 @@ export default function CalendarPage() {
   });
   const queryClient = useQueryClient();
 
+  const { data: session } = useSession();
   const [dateSelected, setDateSelected] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const isFirstRender = useRef(true);
 
   const { data, isLoading, isFetching, error } = useQuery({
@@ -73,10 +78,23 @@ export default function CalendarPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between">
         <h1 className="text-2xl font-semibold text-white">Mess Food Tracker</h1>
-        <button className="bg-blue-500 px-3 py-2 rounded-2xl">
-          <Link href='/settings/mess-pricing'>Mess Pricing</Link>
-        </button>
+        <div className="flex justify-between">
+          <button className="bg-blue-500 px-3 py-2 rounded-2xl">
+            <Link href='/settings/mess-pricing'>Mess Pricing</Link>
+          </button>
+          {session && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-200">
+                {session.user?.email}
+              </span>
+              <LogoutButton />
+            </div>
+          )}
+        </div>
       </div>
+      {
+        isLoginModalOpen && dateSelected && <LoginModal onPress={() => setLoginModalOpen(false) } onClose={() => setLoginModalOpen(false)} />
+      }
       {isModalOpen && dateSelected && (
         <DayEntryModal
           date={dateSelected}
@@ -114,9 +132,14 @@ export default function CalendarPage() {
           setMonth((prev) => (prev === newMonth ? prev : newMonth));
         }}
         dateClick={(info) => {
-          console.log("Clicked date:", info.dateStr);
-          setDateSelected(info.dateStr);
-          setIsModalOpen(true);
+          if (!session) {
+            setLoginModalOpen(true);
+            setDateSelected(info.dateStr);
+          } else {
+            console.log("Clicked date:", info.dateStr);
+            setDateSelected(info.dateStr);
+            setIsModalOpen(true);
+          }
         }}
         eventClick={(info) => {
           info.jsEvent.preventDefault();
