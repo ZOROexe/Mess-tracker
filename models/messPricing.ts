@@ -20,6 +20,11 @@ const MessPricingSchema = new Schema<MealPrice>({
     }
 }, { timestamps: true });
 
+MessPricingSchema.index(
+  { userId: 1, effectiveFrom: 1 },
+  { unique: true }
+);
+
 const MessPriceModel: Model<MealPrice> = mongoose.models.MessPricing || mongoose.model("MessPricing", MessPricingSchema);
 
 export default MessPriceModel;

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Food Price Tracker",
+  title: "Mess Price Tracker",
   description: "For the Prices you eat!",
 };
 

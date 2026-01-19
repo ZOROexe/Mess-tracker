@@ -6,8 +6,16 @@ import { auth } from "@/lib/auth";
 export async function GET() {
     try {
         await connectDB();
-        
-        const pricing = await MessPriceModel.findOne().sort({ effectiveFrom: -1, createdAt: -1 }).lean();
+
+        const session = await auth();
+        if (!session?.user?.email) {
+            return Response.json(null, { status: 200 });
+        }
+
+        const userId = session.user.email;
+
+        const pricing = await MessPriceModel.findOne({ userId }).sort({ effectiveFrom: -1, createdAt: -1 }).lean();
+
         return Response.json(pricing || null, { status: 200 });
     } catch (error) {
         console.error(error);

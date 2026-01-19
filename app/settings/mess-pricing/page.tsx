@@ -66,81 +66,100 @@ export default function MessPricingPage() {
     if (isFetching) {
         return (
             <div className="max-w-md mx-auto p-6 space-y-6">
-                <h1 className="text-2xl font-semibold">
-                    Mess Pricing Settings
-                </h1>
-                <MessPricingSkeleton/>
+            <div className="h-6 w-40 bg-white/20 rounded skeleton-shimmer" />
+            <MessPricingSkeleton />
             </div>
-        )
+        );
     }
 
     return (
         <div className="max-w-md mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold">
-            Mess Pricing Settings
-        </h1>
-        {data && (
-            <div className="rounded-lg border p-4 bg-gray-50 space-y-1 text-black">
-                <p className="font-medium">Current Pricing</p>
-                <p>Breakfast: ₹{data.breakfast}</p>
-                <p>Lunch: ₹{data.lunch}</p>
-                <p>Dinner: ₹{data.dinner}</p>
-                <p className="text-sm text-gray-500">
-                    Effective from: {data.effectiveFrom}
+            <div className="space-y-1">
+                <h1 className="text-2xl font-semibold tracking-tight text-white">
+                Mess Pricing
+                </h1>
+                <p className="text-sm text-gray-400">
+                Configure daily mess rates
                 </p>
             </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-            label="Breakfast Price"
-            name="breakfast"
-            value={form.breakfast}
-            onChange={handleChange}
-            />
+            {data && (
+                <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-5 space-y-2">
+                    <p className="text-sm font-medium text-gray-200">
+                    Current Pricing
+                    </p>
 
-            <Input
-            label="Lunch Price"
-            name="lunch"
-            value={form.lunch}
-            onChange={handleChange}
-            />
+                    <div className="text-sm text-gray-300 space-y-1">
+                    <p>Breakfast: ₹{data.breakfast}</p>
+                    <p>Lunch: ₹{data.lunch}</p>
+                    <p>Dinner: ₹{data.dinner}</p>
+                    </div>
 
-            <Input
-            label="Dinner Price"
-            name="dinner"
-            value={form.dinner}
-            onChange={handleChange}
-            />
-
-            <Input
-            label="Effective From"
-            name="effectiveFrom"
-            type="date"
-            value={form.effectiveFrom}
-            onChange={handleChange}
-            />
-
-            <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-black text-white py-2 rounded"
-            >
-            {isLoading ? "Saving..." : "Save Pricing"}
-            </button>
-
-            {isSuccess && (
-            <p className="text-green-600 text-sm">
-                Pricing saved successfully
-            </p>
+                    <p className="text-xs text-gray-400 pt-2">
+                    Effective from {data.effectiveFrom}
+                    </p>
+                </div>
             )}
+            <form onSubmit={handleSubmit} className="rounded-2xl bg-white/5 border border-white/10 p-5 space-y-5">
+                <Input
+                label="Breakfast Price"
+                name="breakfast"
+                value={form.breakfast}
+                onChange={handleChange}
+                />
 
-            {error && (
-                <p className="text-red-600 text-sm">{error.message}</p>
-            )}
-            {saveError && (
-                <p className="text-red-600 text-sm">{saveError.message}</p>
-            )}
-        </form>
+                <Input
+                label="Lunch Price"
+                name="lunch"
+                value={form.lunch}
+                onChange={handleChange}
+                />
+
+                <Input
+                label="Dinner Price"
+                name="dinner"
+                value={form.dinner}
+                onChange={handleChange}
+                />
+
+                <Input
+                label="Effective From"
+                name="effectiveFrom"
+                type="date"
+                value={form.effectiveFrom}
+                onChange={handleChange}
+                />
+
+                <button
+                type="submit"
+                disabled={isPending}
+                className="
+                        w-full rounded-xl
+                        bg-blue-600
+                        py-2
+                        text-white
+                        font-medium
+                        hover:bg-blue-700
+                        disabled:opacity-60
+                        transition
+                    "
+                >
+                {isLoading ? "Saving..." : "Save Pricing"}
+                </button>
+
+                {isSuccess && (
+                    <p className="text-sm text-green-400">
+                        Pricing updated successfully
+                    </p>
+                    )}
+
+                    {error && (
+                    <p className="text-sm text-red-400">{error.message}</p>
+                    )}
+
+                    {saveError && (
+                    <p className="text-sm text-red-400">{saveError.message}</p>
+                )}
+            </form>
         </div>
     );
     }
@@ -153,12 +172,25 @@ export default function MessPricingPage() {
     }) {
     return (
         <div className="space-y-1">
-        <label className="text-sm font-medium">{label}</label>
-        <input
-            {...props}
-            required
-            className="w-full border rounded px-3 py-2"
-        />
+            <label className="text-xs uppercase tracking-wide text-gray-400">
+                {label}
+            </label>
+            <input
+                {...props}
+                required
+                className="
+                w-full rounded-xl
+                bg-white/10
+                border border-white/10
+                px-3 py-2
+                text-white
+                placeholder-gray-500
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500/50
+                transition
+                "
+            />
         </div>
     );
 }

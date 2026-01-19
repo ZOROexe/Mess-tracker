@@ -1,41 +1,39 @@
 
-export function CalendarSkeleton() {
+export function SummarySkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      {/* Monthly Summary */}
-      <div className="grid grid-cols-3 gap-4 skeleton-shimmer">
-        {[1, 2, 3].map((i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="h-24 rounded-2xl bg-white/10 skeleton-shimmer"
+        />
+      ))}
+    </div>
+  );
+}
+
+export function CalendarGridSkeleton() {
+  return (
+    <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 border border-white/10 space-y-4">
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 gap-2">
+        {["S", "M", "T", "W", "T", "F", "S"].map((_, i) => (
           <div
             key={i}
-            className="h-20 bg-gray-200 rounded-lg"
+            className="h-5 rounded bg-white/10 skeleton-shimmer"
           />
         ))}
       </div>
 
-      {/* Calendar Header (Sun–Sat) */}
-      <div className="grid grid-cols-7 gap-2 skeleton-shimmer">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-          (day) => (
-            <div
-              key={day}
-              className="h-6 bg-gray-300 rounded"
-            />
-          )
-        )}
-      </div>
-
-      {/* Calendar Cells */}
-      <div className="grid grid-cols-7 gap-2 skeleton-shimmer">
+      {/* Days */}
+      <div className="grid grid-cols-7 gap-2">
         {Array.from({ length: 35 }).map((_, i) => (
           <div
             key={i}
-            className="h-24 bg-gray-200 rounded-lg flex flex-col justify-between p-2"
+            className="h-24 rounded-xl bg-white/10 p-2 flex flex-col justify-between skeleton-shimmer"
           >
-            {/* Date placeholder */}
-            <div className="h-4 w-6 bg-gray-300 rounded" />
-
-            {/* Event bar placeholder */}
-            <div className="h-5 bg-gray-300 rounded" />
+            <div className="h-3 w-6 bg-white/20 rounded" />
+            <div className="h-4 w-full bg-white/20 rounded" />
           </div>
         ))}
       </div>
@@ -45,25 +43,20 @@ export function CalendarSkeleton() {
 
 export function DayEntryModalSkeleton() {
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 ">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-5 skeleton-shimmer">
-        {/* Title */}
-        <div className="h-6 w-48 bg-gray-200 rounded" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-5 skeleton-shimmer">
+        <div className="h-6 w-40 bg-gray-200 rounded" />
 
-        {/* Meal Sections */}
-        {["Breakfast", "Lunch", "Dinner"].map((meal) => (
-          <div key={meal} className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="space-y-2">
             <div className="h-4 w-24 bg-gray-200 rounded" />
-
-            {/* Select */}
-            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-10 bg-gray-200 rounded-lg" />
           </div>
         ))}
 
-        {/* Buttons */}
         <div className="flex justify-end gap-3 pt-4">
-          <div className="h-10 w-24 bg-gray-200 rounded" />
-          <div className="h-10 w-24 bg-gray-300 rounded" />
+          <div className="h-10 w-24 bg-gray-200 rounded-lg" />
+          <div className="h-10 w-24 bg-gray-300 rounded-lg" />
         </div>
       </div>
     </div>
@@ -72,27 +65,21 @@ export function DayEntryModalSkeleton() {
 
 export function MessPricingSkeleton() {
   return (
-    <div className="max-w-md mx-auto p-6 space-y-6 skeleton-shimmer">
-      {/* Page Title */}
-      <div className="h-7 w-56 bg-gray-200 rounded" />
+    <div className="max-w-md mx-auto p-6 space-y-6">
+      <div className="h-6 w-56 bg-white/20 rounded skeleton-shimmer" />
 
-      {/* Current Pricing Card */}
-      <div className="border rounded-lg p-4 bg-gray-50 space-y-2">
-        <div className="h-4 w-32 bg-gray-200 rounded" />
-        <div className="h-4 w-40 bg-gray-200 rounded" />
-        <div className="h-4 w-36 bg-gray-200 rounded" />
-        <div className="h-3 w-48 bg-gray-200 rounded mt-2" />
+      <div className="rounded-2xl bg-white/10 p-4 space-y-2 skeleton-shimmer">
+        <div className="h-4 w-32 bg-white/20 rounded" />
+        <div className="h-4 w-40 bg-white/20 rounded" />
+        <div className="h-4 w-36 bg-white/20 rounded" />
+        <div className="h-3 w-48 bg-white/20 rounded mt-2" />
       </div>
 
-      {/* Form Inputs */}
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="space-y-1">
-          <div className="h-4 w-32 bg-gray-200 rounded" />
-        </div>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-10 bg-white/10 rounded-xl skeleton-shimmer" />
       ))}
 
-      {/* Save Button */}
-      <div className="h-10 bg-gray-300 rounded" />
+      <div className="h-10 bg-white/20 rounded-xl skeleton-shimmer" />
     </div>
   );
 }
