@@ -76,21 +76,11 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
     onSave();
   }
 
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-        <h2 className="text-lg font-semibold">
-          Food Entry – {date}
-        </h2>
-        <DayEntryModalSkeleton/>
-      </div>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-5 text-black
-                  animate-[scaleIn_0.15s_ease-out]">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-[scaleIn_0.15s_ease-out]">
+      {isLoading ? <DayEntryModalSkeleton /> : 
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-5 text-black
+                  ">
         <h2 className="text-lg font-semibold">
           Food Entry – {date}
         </h2>
@@ -153,6 +143,7 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
           </button>
         </div>
       </div>
+      }
     </div>
   );
 }

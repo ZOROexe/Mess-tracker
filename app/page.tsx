@@ -68,17 +68,19 @@ export default function CalendarPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className=" flex flex-col sm:items-center sm:flex-row sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Title */}
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Mess Food Tracker
+            Mess Price Tracker
           </h1>
           <p className="text-sm text-gray-400">
             Track daily meals & monthly spend
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
           <Link
             href="/settings/mess-pricing"
             className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition"
@@ -86,14 +88,13 @@ export default function CalendarPage() {
             Mess Pricing
           </Link>
 
-          <div className="flex items-center gap-3">
-              {session && (
-              <span className="text-sm text-gray-300 max-w-35 truncate">
-                {session.user?.email}
-              </span>
-            )}
-            <AuthButton />
-          </div>
+          {session && (
+            <span className="text-sm text-gray-400 max-w-[170px] truncate">
+              {session.user?.email}
+            </span>
+          )}
+
+          <AuthButton />
         </div>
       </div>
       {
@@ -111,7 +112,7 @@ export default function CalendarPage() {
           month = {month}
         />
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="">
         {isFetching ? <SummarySkeleton/> : <MonthlySummary summary={summary} />}
         
       </div>
