@@ -43,23 +43,35 @@ export function CalendarGridSkeleton() {
 
 export function DayEntryModalSkeleton() {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-5 skeleton-shimmer">
-        <div className="h-6 w-40 bg-gray-200 rounded" />
+      <div
+        className="
+          bg-white rounded-2xl p-6 w-full max-w-md
+          space-y-5 text-black
+          skeleton-shimmer
+          animate-[scaleIn_0.15s_ease-out]
+        "
+      >
+        {/* Title */}
+        <div className="h-6 w-44 bg-gray-200 rounded" />
 
+        {/* Meals */}
         {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-2">
+          <div key={i} className="space-y-4">
+            {/* Meal label */}
             <div className="h-4 w-24 bg-gray-200 rounded" />
-            <div className="h-10 bg-gray-200 rounded-lg" />
+
+            {/* Select */}
+            <div className="h-10 w-full bg-gray-200 rounded-lg" />
+
           </div>
         ))}
 
+        {/* Buttons */}
         <div className="flex justify-end gap-3 pt-4">
           <div className="h-10 w-24 bg-gray-200 rounded-lg" />
           <div className="h-10 w-24 bg-gray-300 rounded-lg" />
         </div>
       </div>
-    </div>
   );
 }
 

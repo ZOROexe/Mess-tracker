@@ -78,6 +78,35 @@ body {
   color: #b3b7c0; /* soft light text */
 }
 
+/* Base toolbar fix */
+.fc .fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Mobile layout */
+@media (max-width: 640px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .fc .fc-toolbar-chunk {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fc .fc-button-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .fc .fc-today-button {
+    width: 100%;
+  }
+}
+
 /* Header buttons */
 .fc-toolbar-title {
   font-weight: 500;

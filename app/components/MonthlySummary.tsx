@@ -8,7 +8,7 @@ interface SummaryProps {
 
 export default function MonthlySummary({ summary }: SummaryProps) {
   return (
-    <div className="grid grid-cols-3 gap-4 text-black">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-black">
       <SummaryCard label="Mess Total" value={summary.messTotal} />
       <SummaryCard label="Outside Total" value={summary.outsideTotal} />
       <SummaryCard label="Grand Total" value={summary.grandTotal} />

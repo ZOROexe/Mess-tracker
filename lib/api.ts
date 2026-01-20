@@ -10,7 +10,8 @@ export async function FetchMonthlyFood(month: string) {
     try {
         const res = await fetch(`/api/food-entry?month=${month}`);
         if (!res.ok) {
-            throw new Error("Failed to fetch monthly data");
+            const data = await res.json();
+            throw new Error(`Failed to fetch monthly data: ${data.message}`);
         }
         return res.json();
     } catch (error) {
@@ -22,7 +23,8 @@ export async function FetchDailyFood(date: string) {
     try {
         const res = await fetch(`/api/food-entry?date=${date}`);
         if (!res.ok) {
-            throw new Error("Failed to fetch daily data");
+            const data = await res.json();
+            throw new Error(`Failed to fetch daily data: ${data.message}`);
         }
         return res.json();
     } catch (error) {
