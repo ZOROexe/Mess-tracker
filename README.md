@@ -1,68 +1,48 @@
-# 🍽️ Mess Food & Expense Tracker
+# Mess Food Tracker 🍽️
 
-A full-stack web application to track daily food consumption from a mess and outside sources, calculate monthly expenses automatically, and visualize spending using a calendar-based interface.
-
-Built for real-world usage with dynamic pricing, accurate billing, and a clean UX.
+A personal web application to track daily food consumption (mess vs outside) and calculate monthly expenses with clear visual insights.
 
 ---
 
-## Live Demo
+## ✨ Features
 
-👉 [https://your-vercel-app-url.vercel.app](https://mess-tracker-neon.vercel.app)  
-
----
-
-## Features
-
-### Calendar-Based Food Logging
-- Track **Breakfast, Lunch, Dinner** for each day
-- Log food source:
-  - Mess
-  - Outside
-  - Not taken
-- Click any date to **add or edit entries**
-
-### Automatic Cost Calculation
-- Mess food prices calculated **on the backend**
-- Outside food cost entered manually
-- Monthly totals computed automatically
-
-### Monthly Summary
-- Total Mess expense
-- Total Outside expense
-- Grand total for the month
-
-### Visual Indicators
-- 🟢 Green → Mess only
-- 🟠 Orange → Mess + Outside
-- 🔴 Red → Outside only
-
-### Dynamic Mess Pricing
-- Mess prices stored in database
-- Prices can change over time using an **effective date**
-- Old records remain accurate (no retroactive changes)
-
-### Smart Design
-- One entry per day
-- Backend-driven billing logic
-- No frontend price manipulation
+- 📅 Calendar-based daily food tracking
+- 🏠 Separate tracking for mess and outside food
+- 📊 Monthly summary (mess, outside, total)
+- 📈 Analytics with charts (pie & bar)
+- 🔐 Google authentication
+- 👤 Multi-user data isolation
+- 🧠 Smart caching using React Query
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
-- Next.js (App Router)
-- React
-- TypeScript
-- Tailwind CSS
-- FullCalendar
+- **Next.js (App Router)**
+- **TypeScript**
+- **Tailwind CSS**
+- **FullCalendar**
+- **Recharts** (analytics)
+- **@tanstack/react-query** (data fetching & caching)
 
 ### Backend
-- Next.js API Routes
-- MongoDB
-- Mongoose
+- **Next.js API Routes**
+- **MongoDB + Mongoose**
+- **Aggregation pipelines** for analytics
+- **NextAuth.js** for authentication
 
-### Deployment
-- Vercel
-- MongoDB Atlas
+### Auth
+- Google OAuth
+- JWT-based sessions
+- Route-level and API-level protection
+
+---
+
+## Analytics Included
+
+- Total spend per month
+- Mess vs Outside spending ratio
+- Average daily spend
+
+---
