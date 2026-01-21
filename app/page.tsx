@@ -12,6 +12,7 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FetchMonthlyFood } from "@/lib/api";
 import { useRef, useState, useMemo } from "react";
+import PageHeader from "./components/Header";
 
 interface CalendarEvent {
   date: string;
@@ -68,35 +69,12 @@ export default function CalendarPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Title */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Mess Price Tracker
-          </h1>
-          <p className="text-sm text-gray-400">
-            Track daily meals & monthly spend
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-          <Link
-            href="/settings/mess-pricing"
-            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition"
-          >
-            Mess Pricing
-          </Link>
-
-          {session && (
-            <span className="text-sm text-gray-400 max-w-[170px] truncate">
-              {session.user?.email}
-            </span>
-          )}
-
-          <AuthButton />
-        </div>
-      </div>
+      <PageHeader title="Mess Price Tracker"
+      subtitle="Track daily meals & monthly spend"
+      actions={[
+        { label: "Analytics", href: "/analytics" },
+        { label: "Mess Pricing", href: "/settings/mess-pricing" }
+      ]}/>
       {
         isLoginModalOpen && dateSelected && <LoginModal onPress={() => setLoginModalOpen(false) } onClose={() => setLoginModalOpen(false)} />
       }
