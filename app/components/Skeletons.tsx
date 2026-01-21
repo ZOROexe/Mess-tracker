@@ -95,3 +95,46 @@ export function MessPricingSkeleton() {
     </div>
   );
 }
+
+function ChartSkeleton() {
+  return (
+    <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3 skeleton-shimmer">
+      <div className="h-4 w-32 bg-white/20 rounded" />
+      <div className="h-56 bg-white/10 rounded-xl" />
+    </div>
+  );
+}
+
+export function AnalyticsPageSkeleton() {
+  return (
+    <div className="p-6 space-y-8 max-w-4xl mx-auto animate-pulse">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-6 w-48 bg-white/20 rounded" />
+          <div className="h-4 w-32 bg-white/10 rounded" />
+        </div>
+        <div className="h-8 w-40 bg-white/10 rounded-xl" />
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="h-24 rounded-2xl bg-white/10 border border-white/10 skeleton-shimmer"
+          />
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ChartSkeleton />
+        <ChartSkeleton />
+      </div>
+
+      {/* Footer insight */}
+      <div className="h-10 rounded-xl bg-white/10 border border-white/10 skeleton-shimmer" />
+    </div>
+  );
+}
