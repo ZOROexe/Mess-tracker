@@ -103,21 +103,21 @@ export async function GET(req: NextRequest) {
                 $sum: [
                 {
                     $cond: [
-                    { $eq: ["$breakfast.source", "mess"] },
+                    { $in: ["$breakfast.source", ["mess", "mess_regular", "mess_chicken"]] },
                     "$breakfast.cost",
                     0
                     ]
                 },
                 {
                     $cond: [
-                    { $eq: ["$lunch.source", "mess"] },
+                    { $in: ["$lunch.source", ["mess", "mess_regular", "mess_chicken"]] },
                     "$lunch.cost",
                     0
                     ]
                 },
                 {
                     $cond: [
-                    { $eq: ["$dinner.source", "mess"] },
+                    { $in: ["$dinner.source", ["mess", "mess_regular", "mess_chicken"]] },
                     "$dinner.cost",
                     0
                     ]
@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
         return {
             date: e.date,
             totalCost: e.totalCost,
-            hasMess: meals.some((m) => m.source === "mess"),
+            hasMess: meals.some((m) => ["mess", "mess_regular", "mess_chicken"].includes(m.source)),
             hasOutside: meals.some((m) => m.source === "outside")
         };
         });

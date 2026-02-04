@@ -46,7 +46,7 @@ export function MonthSwitcher({
         ←
       </button>
 
-      <span className="text-sm text-gray-300 min-w-[140px] text-center">
+      <span className="text-sm text-gray-300 min-w-35 text-center">
         {labelMonth}
       </span>
 
