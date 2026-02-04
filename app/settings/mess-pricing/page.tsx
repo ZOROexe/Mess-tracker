@@ -10,8 +10,10 @@ export default function MessPricingPage() {
 
     const [form, setForm] = useState({
         breakfast: "",
-        lunch: "",
-        dinner: "",
+        lunch_regular: "",
+        lunch_chicken: "",
+        dinner_regular: "",
+        dinner_chicken: "",
         effectiveFrom: ""
     });
     const queryClient = useQueryClient();
@@ -50,15 +52,19 @@ export default function MessPricingPage() {
         e.preventDefault();
         const payload = {
             breakfast: Number(form.breakfast),
-            lunch: Number(form.lunch),
-            dinner: Number(form.dinner),
+            lunch_regular: Number(form.lunch_regular),
+            lunch_chicken: Number(form.lunch_chicken),
+            dinner_regular: Number(form.dinner_regular),
+            dinner_chicken: Number(form.dinner_chicken),
             effectiveFrom: form.effectiveFrom
         };
         mutate(payload);
         setForm({
             breakfast: "",
-            lunch: "",
-            dinner: "",
+            lunch_regular: "",
+            lunch_chicken: "",
+            dinner_regular: "",
+            dinner_chicken: "",
             effectiveFrom: ""
         });
     }
@@ -90,8 +96,10 @@ export default function MessPricingPage() {
 
                     <div className="text-sm text-gray-300 space-y-1">
                     <p>Breakfast: ₹{data.breakfast}</p>
-                    <p>Lunch: ₹{data.lunch}</p>
-                    <p>Dinner: ₹{data.dinner}</p>
+                    <p>Lunch Regular: ₹{data.lunch_regular}</p>
+                    <p>Lunch Chicken: ₹{data.lunch_chicken}</p>
+                    <p>Dinner Regular: ₹{data.dinner_regular}</p>
+                    <p>Dinner Chicken: ₹{data.dinner_chicken}</p>
                     </div>
 
                     <p className="text-xs text-gray-400 pt-2">
@@ -108,16 +116,30 @@ export default function MessPricingPage() {
                 />
 
                 <Input
-                label="Lunch Price"
-                name="lunch"
-                value={form.lunch}
+                label="Lunch Regular Price"
+                name="lunch_regular"
+                value={form.lunch_regular}
                 onChange={handleChange}
                 />
 
                 <Input
-                label="Dinner Price"
-                name="dinner"
-                value={form.dinner}
+                label="Lunch Chicken Price"
+                name="lunch_chicken"
+                value={form.lunch_chicken}
+                onChange={handleChange}
+                />
+
+                <Input
+                label="Dinner Regular Price"
+                name="dinner_regular"
+                value={form.dinner_regular}
+                onChange={handleChange}
+                />
+
+                <Input
+                label="Dinner Chicken Price"
+                name="dinner_chicken"
+                value={form.dinner_chicken}
                 onChange={handleChange}
                 />
 

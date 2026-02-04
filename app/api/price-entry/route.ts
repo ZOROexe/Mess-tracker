@@ -35,16 +35,18 @@ export async function POST(req: NextRequest) {
         }
         const userId = session.user.email;
         const body = await req.json();
-        const { breakfast, lunch, dinner, effectiveFrom } = body;
+        const { breakfast, lunch_regular, lunch_chicken, dinner_regular, dinner_chicken, effectiveFrom } = body;
 
-        if (!breakfast || !lunch || !dinner || !effectiveFrom) {
+        if (!breakfast || !lunch_regular || !lunch_chicken || !dinner_regular || !dinner_chicken || !effectiveFrom) {
             return Response.json({ message: "All fields are required" }, { status: 400 });
         }
 
         const pricing = await MessPriceModel.create({
             breakfast,
-            lunch,
-            dinner,
+            lunch_regular,
+            lunch_chicken,
+            dinner_regular,
+            dinner_chicken,
             effectiveFrom,
             userId
         });

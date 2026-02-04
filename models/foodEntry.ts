@@ -4,7 +4,7 @@ import { FoodEntry, MealEntry} from '@/types/food';
 const MealSchema = new Schema<MealEntry>({
     source: {
         type: String,
-        enum: ["mess", "outside", "none"],
+        enum: ["mess", "mess_regular", "mess_chicken", "outside", "none"],
         default: "none"
     },
     cost: {

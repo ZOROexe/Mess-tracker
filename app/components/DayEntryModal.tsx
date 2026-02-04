@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FetchDailyFood, saveFoodEntry } from "@/lib/api";
 import { DayEntryModalSkeleton } from "./Skeletons";
 
-type MealSource = "none" | "mess" | "outside";
+type MealSource = "none" | "mess" | "mess_regular" | "mess_chicken" | "outside";
 
 interface Props {
   date: string;
@@ -107,7 +107,14 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
               }
             >
               <option value="none">Not Taken</option>
-              <option value="mess">Mess</option>
+              {meal === "breakfast" ? (
+                <option value="mess_regular">Mess</option>
+              ) : (
+                <>
+                  <option value="mess_regular">Mess Regular</option>
+                  <option value="mess_chicken">Mess Chicken</option>
+                </>
+              )}
               <option value="outside">Outside</option>
             </select>
 
