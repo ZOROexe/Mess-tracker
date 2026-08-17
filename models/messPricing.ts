@@ -8,6 +8,7 @@ interface MealPrice {
     dinner_chicken: number;
     effectiveFrom: string;
     userId: string;
+    messId?: mongoose.Types.ObjectId;
 }
 
 const MessPricingSchema = new Schema<MealPrice>({
@@ -21,12 +22,18 @@ const MessPricingSchema = new Schema<MealPrice>({
         type: String,
         required: true,
         index: true
+    },
+    // Kept optional until all historical pricing records have been migrated.
+    messId: {
+        type: Schema.Types.ObjectId,
+        ref: "Mess",
+        required: false,
     }
 }, { timestamps: true });
 
 MessPricingSchema.index(
-  { userId: 1, effectiveFrom: 1 },
-  { unique: true }
+  { userId: 1, messId: 1, effectiveFrom: 1 },
+  { unique: true, name: "userId_1_messId_1_effectiveFrom_1" }
 );
 
 const MessPriceModel: Model<MealPrice> = mongoose.models.MessPricing || mongoose.model("MessPricing", MessPricingSchema);

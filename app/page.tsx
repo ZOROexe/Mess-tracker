@@ -73,6 +73,8 @@ export default function CalendarPage() {
       subtitle="Track daily meals & monthly spend"
       actions={[
         { label: "Analytics", href: "/analytics" },
+        { label: "Bills", href: "/bills" },
+        { label: "Messes", href: "/settings/messes" },
         { label: "Mess Pricing", href: "/settings/mess-pricing" }
       ]}/>
       {
