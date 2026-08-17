@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessPricingSkeleton } from "@/app/components/Skeletons";
-import { getMessPrice ,saveMessPirce} from "@/lib/api";
-import { MealPrice } from "@/types/food";
+import { fetchMesses, getMessPrice, saveMessPirce } from "@/lib/api";
 
 export default function MessPricingPage() {
+    const [messId, setMessId] = useState("");
 
     const [form, setForm] = useState({
         breakfast: "",
@@ -18,12 +19,16 @@ export default function MessPricingPage() {
     });
     const queryClient = useQueryClient();
 
-    const { data, isLoading, isFetching, error } = useQuery({
-        queryKey: ['mess-price'],
-        queryFn: getMessPrice,
-        initialData: () => {
-            return queryClient.getQueryData(["mess-price"])
-        },
+    const { data: messes = [], isLoading: areMessesLoading, error: messesError } = useQuery({
+        queryKey: ["messes"],
+        queryFn: () => fetchMesses(),
+        staleTime: 60_000,
+    });
+
+    const { data, isLoading: isPricingLoading, isFetching, error } = useQuery({
+        queryKey: ['mess-price', messId],
+        queryFn: () => getMessPrice(messId),
+        enabled: Boolean(messId),
         staleTime: 1000000,
     })
 
@@ -31,7 +36,7 @@ export default function MessPricingPage() {
         mutationFn: saveMessPirce,
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['mess-price']
+                queryKey: ['mess-price', messId]
             })
         },
         onError: (err) => {
@@ -51,6 +56,7 @@ export default function MessPricingPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         const payload = {
+            messId,
             breakfast: Number(form.breakfast),
             lunch_regular: Number(form.lunch_regular),
             lunch_chicken: Number(form.lunch_chicken),
@@ -69,7 +75,7 @@ export default function MessPricingPage() {
         });
     }
 
-    if (isFetching) {
+    if (areMessesLoading) {
         return (
             <div className="max-w-md mx-auto p-6 space-y-6">
             <div className="h-6 w-40 bg-white/20 rounded skeleton-shimmer" />
@@ -80,14 +86,39 @@ export default function MessPricingPage() {
 
     return (
         <div className="max-w-md mx-auto p-6 space-y-6">
-            <div className="space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight text-white">
-                Mess Pricing
-                </h1>
-                <p className="text-sm text-gray-400">
-                Configure daily mess rates
-                </p>
+            <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                    <h1 className="text-2xl font-semibold tracking-tight text-white">
+                    Mess Pricing
+                    </h1>
+                    <p className="text-sm text-gray-400">
+                    Configure daily mess rates
+                    </p>
+                </div>
+                <Link
+                    href="/settings/messes"
+                    className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition"
+                >
+                    Messes
+                </Link>
             </div>
+            <div className="space-y-1">
+                <label htmlFor="mess" className="text-sm font-medium text-gray-200">Mess</label>
+                <select
+                    id="mess"
+                    value={messId}
+                    onChange={(event) => setMessId(event.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                >
+                    <option value="" className="text-black">Select a mess</option>
+                    {messes.map((mess) => (
+                        <option key={mess._id} value={mess._id} className="text-black">{mess.name}</option>
+                    ))}
+                </select>
+                {messes.length === 0 && <p className="text-sm text-gray-400">Create a mess before configuring pricing.</p>}
+                {messesError && <p className="text-sm text-red-400">{messesError.message}</p>}
+            </div>
+            {messId && isFetching && <MessPricingSkeleton />}
             {data && (
                 <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-5 space-y-2">
                     <p className="text-sm font-medium text-gray-200">
@@ -107,7 +138,7 @@ export default function MessPricingPage() {
                     </p>
                 </div>
             )}
-            <form onSubmit={handleSubmit} className="rounded-2xl bg-white/5 border border-white/10 p-5 space-y-5">
+            {messId && <form onSubmit={handleSubmit} className="rounded-2xl bg-white/5 border border-white/10 p-5 space-y-5">
                 <Input
                 label="Breakfast Price"
                 name="breakfast"
@@ -165,7 +196,7 @@ export default function MessPricingPage() {
                         transition
                     "
                 >
-                {isLoading ? "Saving..." : "Save Pricing"}
+                {isPricingLoading || isPending ? "Saving..." : "Save Pricing"}
                 </button>
 
                 {isSuccess && (
@@ -182,6 +213,7 @@ export default function MessPricingPage() {
                     <p className="text-sm text-red-400">{saveError.message}</p>
                 )}
             </form>
+            }
         </div>
     );
     }

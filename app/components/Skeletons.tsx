@@ -96,6 +96,55 @@ export function MessPricingSkeleton() {
   );
 }
 
+export function MessListSkeleton() {
+  return (
+    <div className="max-w-lg mx-auto p-6 space-y-6">
+      <div className="space-y-2">
+        <div className="h-7 w-40 bg-white/20 rounded skeleton-shimmer" />
+        <div className="h-4 w-56 bg-white/10 rounded skeleton-shimmer" />
+      </div>
+
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="rounded-2xl bg-white/10 border border-white/10 p-5 space-y-3 skeleton-shimmer"
+        >
+          <div className="h-5 w-36 bg-white/20 rounded" />
+          <div className="h-4 w-48 bg-white/15 rounded" />
+          <div className="h-4 w-32 bg-white/15 rounded" />
+          <div className="h-9 w-24 bg-white/20 rounded-xl mt-2" />
+        </div>
+      ))}
+
+      <div className="h-10 w-full bg-white/10 rounded-xl skeleton-shimmer" />
+    </div>
+  );
+}
+
+export function MessFormSkeleton() {
+  return (
+    <div className="max-w-md mx-auto p-6 space-y-6">
+      <div className="space-y-2">
+        <div className="h-7 w-32 bg-white/20 rounded skeleton-shimmer" />
+        <div className="h-4 w-48 bg-white/10 rounded skeleton-shimmer" />
+      </div>
+
+      <div className="rounded-2xl bg-white/5 border border-white/10 p-5 space-y-5">
+        <div className="h-10 bg-white/10 rounded-xl skeleton-shimmer" />
+        <div className="space-y-3">
+          <div className="h-4 w-28 bg-white/15 rounded skeleton-shimmer" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-8 bg-white/10 rounded-lg skeleton-shimmer" />
+          ))}
+        </div>
+        <div className="h-10 bg-white/10 rounded-xl skeleton-shimmer" />
+        <div className="h-10 bg-white/10 rounded-xl skeleton-shimmer" />
+        <div className="h-10 bg-white/20 rounded-xl skeleton-shimmer" />
+      </div>
+    </div>
+  );
+}
+
 function ChartSkeleton() {
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3 skeleton-shimmer">

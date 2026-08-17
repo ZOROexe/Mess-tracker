@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
         const userId = session.user.email
         const body = (await req.json()) as Omit<FoodEntry, 'totalCost'>;
         
-        const breakfast = await normalizeMeal("breakfast", body.breakfast, body.date);
-        const lunch = await normalizeMeal("lunch", body.lunch, body.date);
-        const dinner = await normalizeMeal("dinner", body.dinner, body.date);
+        const breakfast = await normalizeMeal(userId, "breakfast", body.breakfast, body.date);
+        const lunch = await normalizeMeal(userId, "lunch", body.lunch, body.date);
+        const dinner = await normalizeMeal(userId, "dinner", body.dinner, body.date);
 
         if (isEmpty(breakfast, lunch, dinner)) {
             const del = await FoodEntryModel.deleteOne({ date: body.date });
@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
                 }
                 ]
             },
-            totalCost: 1
+            grandTotal: { $add: ["$messCost", "$outsideCost"] }
             }
         },
         {
@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
             _id: null,
             messTotal: { $sum: "$messCost" },
             outsideTotal: { $sum: "$outsideCost" },
-            grandTotal: { $sum: "$totalCost" }
+            grandTotal: { $sum: "$grandTotal" }
             }
         }
         ]);

@@ -11,6 +11,12 @@ const MealSchema = new Schema<MealEntry>({
         type: Number,
         default: 0
     },
+    // Kept optional until all historical entries have been migrated.
+    messId: {
+        type: Schema.Types.ObjectId,
+        ref: "Mess",
+        required: false,
+    },
 }, { _id: false })
 
 const FoodEntrySchema = new Schema<FoodEntry>({
