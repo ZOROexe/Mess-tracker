@@ -8,7 +8,7 @@ import {
 import MessModel, { BillingConfig } from "@/models/mess";
 import { NextRequest } from "next/server";
 
-interface CreateMessRequest extends MessInput {}
+type CreateMessRequest = MessInput;
 
 export async function GET(req: NextRequest) {
   try {

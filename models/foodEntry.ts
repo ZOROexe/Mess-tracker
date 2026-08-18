@@ -17,6 +17,15 @@ const MealSchema = new Schema<MealEntry>({
         ref: "Mess",
         required: false,
     },
+    mealOptionId: {
+        type: Schema.Types.ObjectId,
+        ref: "MessMealOption",
+        required: false,
+    },
+    mealOptionName: {
+        type: String,
+        required: false,
+    },
 }, { _id: false })
 
 const FoodEntrySchema = new Schema<FoodEntry>({

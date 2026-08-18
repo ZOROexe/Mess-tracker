@@ -5,6 +5,25 @@ import { FoodEntry } from "@/types/food";
 import { NextRequest } from "next/server";
 import { isEmpty } from "@/lib/costCalculate";
 import { auth } from "@/lib/auth";
+import { isValidFoodEntryPayload } from "@/lib/foodEntryValidation";
+
+function serializeMeal(meal: FoodEntry["breakfast"]) {
+    return {
+        ...meal,
+        messId: meal.messId ? String(meal.messId) : undefined,
+        mealOptionId: meal.mealOptionId ? String(meal.mealOptionId) : undefined,
+    };
+}
+
+function serializeEntry(entry: FoodEntry) {
+    return {
+        ...entry,
+        _id: undefined,
+        breakfast: serializeMeal(entry.breakfast),
+        lunch: serializeMeal(entry.lunch),
+        dinner: serializeMeal(entry.dinner),
+    };
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,7 +33,10 @@ export async function POST(req: NextRequest) {
             return Response.json({message: "Unauthorised"}, {status: 401})
         }
         const userId = session.user.email
-        const body = (await req.json()) as Omit<FoodEntry, 'totalCost'>;
+        const body: unknown = await req.json();
+        if (!isValidFoodEntryPayload(body)) {
+            return Response.json({ message: "Invalid food entry payload" }, { status: 400 });
+        }
         
         const breakfast = await normalizeMeal(userId, "breakfast", body.breakfast, body.date);
         const lunch = await normalizeMeal(userId, "lunch", body.lunch, body.date);
@@ -68,7 +90,7 @@ export async function GET(req: NextRequest) {
                 return Response.json(null, {status: 200});
             }
             const entry = await FoodEntryModel.findOne({userId,  date }).lean();
-            return Response.json(entry || null);
+            return Response.json(entry ? serializeEntry(entry) : null);
         }
 
         const month = req.nextUrl.searchParams.get("month");
@@ -99,65 +121,72 @@ export async function GET(req: NextRequest) {
         },
         {
             $project: {
-            messCost: {
-                $sum: [
-                {
-                    $cond: [
-                    { $in: ["$breakfast.source", ["mess", "mess_regular", "mess_chicken"]] },
-                    "$breakfast.cost",
-                    0
+                messCost: {
+                    $sum: [
+                        {
+                            $cond: [
+                                { $in: ["$breakfast.source", ["mess", "mess_regular", "mess_chicken"]] },
+                                "$breakfast.cost",
+                                0
+                            ]
+                        },
+                        {
+                            $cond: [
+                                { $in: ["$lunch.source", ["mess", "mess_regular", "mess_chicken"]] },
+                                "$lunch.cost",
+                                0
+                            ]
+                        },
+                        {
+                            $cond: [
+                                { $in: ["$dinner.source", ["mess", "mess_regular", "mess_chicken"]] },
+                                "$dinner.cost",
+                                0
+                            ]
+                        }
                     ]
                 },
-                {
-                    $cond: [
-                    { $in: ["$lunch.source", ["mess", "mess_regular", "mess_chicken"]] },
-                    "$lunch.cost",
-                    0
-                    ]
-                },
-                {
-                    $cond: [
-                    { $in: ["$dinner.source", ["mess", "mess_regular", "mess_chicken"]] },
-                    "$dinner.cost",
-                    0
+                outsideCost: {
+                    $sum: [
+                        {
+                            $cond: [
+                                { $eq: ["$breakfast.source", "outside"] },
+                                "$breakfast.cost",
+                                0
+                            ]
+                        },
+                        {
+                            $cond: [
+                                { $eq: ["$lunch.source", "outside"] },
+                                "$lunch.cost",
+                                0
+                            ]
+                        },
+                        {
+                            $cond: [
+                                { $eq: ["$dinner.source", "outside"] },
+                                "$dinner.cost",
+                                0
+                            ]
+                        }
                     ]
                 }
-                ]
-            },
-            outsideCost: {
-                $sum: [
-                {
-                    $cond: [
-                    { $eq: ["$breakfast.source", "outside"] },
-                    "$breakfast.cost",
-                    0
-                    ]
-                },
-                {
-                    $cond: [
-                    { $eq: ["$lunch.source", "outside"] },
-                    "$lunch.cost",
-                    0
-                    ]
-                },
-                {
-                    $cond: [
-                    { $eq: ["$dinner.source", "outside"] },
-                    "$dinner.cost",
-                    0
-                    ]
-                }
-                ]
-            },
-            grandTotal: { $add: ["$messCost", "$outsideCost"] }
             }
         },
         {
             $group: {
-            _id: null,
-            messTotal: { $sum: "$messCost" },
-            outsideTotal: { $sum: "$outsideCost" },
-            grandTotal: { $sum: "$grandTotal" }
+                _id: null,
+                messTotal: { $sum: "$messCost" },
+                outsideTotal: { $sum: "$outsideCost" },
+                totalCost: { $sum: { $add: ["$messCost", "$outsideCost"] } }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                messTotal: 1,
+                outsideTotal: 1,
+                grandTotal: "$totalCost"
             }
         }
         ]);

@@ -5,6 +5,8 @@ export interface MealEntry {
     cost: number;
     // Optional while existing entries are being migrated to per-meal messes.
     messId?: string;
+    mealOptionId?: string;
+    mealOptionName?: string;
 }
 
 export interface FoodEntry {
@@ -20,6 +22,8 @@ export interface MealState {
   source: MealSource;
   cost?: number;
   messId?: string;
+  mealOptionId?: string;
+  mealOptionName?: string;
 }
 
 export interface MealPrice {
