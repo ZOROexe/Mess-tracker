@@ -175,3 +175,86 @@ export async function createMessPayment(messId: string, payload: MessPaymentInpu
     const data = await res.json();
     return data.payment;
 }
+
+export type MessMealOption = {
+    _id: string;
+    userId: string;
+    messId: string;
+    meal: "breakfast" | "lunch" | "dinner";
+    name: string;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export async function fetchMessMealOptions(messId: string): Promise<MessMealOption[]> {
+    const res = await fetch(`/api/mess-options?messId=${encodeURIComponent(messId)}`);
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to fetch meal options");
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+}
+
+export async function createMessMealOption(payload: { messId: string; meal: "breakfast" | "lunch" | "dinner"; name: string; isActive?: boolean; }): Promise<MessMealOption> {
+    const res = await fetch("/api/mess-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to create meal option");
+    }
+    return res.json();
+}
+
+export async function updateMessMealOption(optionId: string, payload: { name?: string; isActive?: boolean }): Promise<MessMealOption> {
+    const res = await fetch(`/api/mess-options/${optionId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to update meal option");
+    }
+    return res.json();
+}
+
+export async function deactivateMessMealOption(optionId: string): Promise<MessMealOption> {
+    const res = await fetch(`/api/mess-options/${optionId}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to deactivate meal option");
+    }
+    return res.json();
+}
+
+export async function fetchMealOption(optionId: string): Promise<MessMealOption> {
+    const res = await fetch(`/api/mess-options/${optionId}`);
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to fetch meal option");
+    }
+    return res.json();
+}
+
+export async function fetchMealOptionPricing(optionId: string): Promise<Array<{ _id: string; price: number; effectiveFrom: string }>> {
+    const res = await fetch(`/api/mess-options/${optionId}/pricing`);
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to fetch meal option pricing");
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+}
+
+export async function addMealOptionPrice(optionId: string, payload: { price: number; effectiveFrom: string }) {
+    const res = await fetch(`/api/mess-options/${optionId}/pricing`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        await parseErrorResponse(res, "Failed to add meal option price");
+    }
+    return res.json();
+}
