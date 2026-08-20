@@ -250,7 +250,11 @@ export default function DayEntryModal({ date, onClose, onSave, month }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => updateMealSource(meal, "mess")}
+                    onClick={() => {
+                      if (!isMessSource(entry.source)) {
+                        updateMealSource(meal, "mess");
+                      }
+                    }}
                     className={`py-1.5 px-3 rounded-md text-xs font-medium transition-all ${
                       isMessSource(entry.source)
                         ? "bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/30 shadow-sm"

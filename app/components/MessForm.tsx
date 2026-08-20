@@ -157,14 +157,15 @@ export default function MessForm({
           min={1}
           max={31}
           value={monthlyStartDay}
-          onChange={(e) =>
+          onChange={(e) => {
+            const raw = e.target.value;
             setBillingConfig((prev) => ({
               ...prev,
-              monthlyStartDay: Number(e.target.value),
-            }))
-          }
+              monthlyStartDay: raw === "" ? prev.monthlyStartDay : Number(raw),
+            }));
+          }}
           required
-          helperText={getMonthlyBillingExplanation(monthlyStartDay)}
+          helperText={getMonthlyBillingExplanation(monthlyStartDay ?? 1)}
         />
       )}
 

@@ -316,7 +316,7 @@ export default function BillsPage() {
         <div className="space-y-4">
           {messes.map((mess, index) => {
             const query = billQueries[index];
-            if (query?.isFetching) {
+            if (query?.isLoading) {
               return <Skeleton key={mess._id} className="h-44 w-full" />;
             }
             if (query?.error) {

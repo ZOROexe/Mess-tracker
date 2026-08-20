@@ -56,6 +56,14 @@ export default function MessPricingPage() {
       queryClient.invalidateQueries({
         queryKey: ["mess-price", messId],
       });
+      setForm({
+        breakfast: "",
+        lunch_regular: "",
+        lunch_chicken: "",
+        dinner_regular: "",
+        dinner_chicken: "",
+        effectiveFrom: "",
+      });
     },
     onError: (err) => {
       console.error("Save failed:", err);
@@ -69,7 +77,7 @@ export default function MessPricingPage() {
     }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const payload = {
       messId,
@@ -81,14 +89,6 @@ export default function MessPricingPage() {
       effectiveFrom: form.effectiveFrom,
     };
     mutate(payload);
-    setForm({
-      breakfast: "",
-      lunch_regular: "",
-      lunch_chicken: "",
-      dinner_regular: "",
-      dinner_chicken: "",
-      effectiveFrom: "",
-    });
   }
 
   if (areMessesLoading) {
@@ -259,7 +259,7 @@ export default function MessPricingPage() {
               disabled={isPending || isPricingLoading}
               isLoading={isPending}
             >
-              {isPricingLoading || isPending ? "Saving..." : "Save Pricing Rates"}
+              {isPending ? "Saving..." : "Save Pricing Rates"}
             </Button>
           </div>
 

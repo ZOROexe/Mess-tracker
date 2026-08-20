@@ -21,9 +21,9 @@ export function SummarySkeleton() {
 export function CalendarGridSkeleton() {
   return (
     <div className="w-full h-full flex flex-col space-y-2 select-none">
-      {/* Weekday headers matching FullCalendar header */}
+      {/* Weekday headers matching FullCalendar header: Sunday-first */}
       <div className="grid grid-cols-7 border-b border-white/[0.08] pb-2">
-        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day, i) => (
+        {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day, i) => (
           <div key={i} className="text-center">
             <span className="text-[11px] font-medium text-[#9AA3AD] uppercase tracking-wider">
               {day}
@@ -32,9 +32,9 @@ export function CalendarGridSkeleton() {
         ))}
       </div>
 
-      {/* Days grid matching 5 rows of 7 days */}
+      {/* Days grid: 42 cells (6 rows × 7 cols) matching fixedWeekCount=false max */}
       <div className="grid grid-cols-7 gap-[1px] bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.08] flex-1">
-        {Array.from({ length: 35 }).map((_, i) => (
+        {Array.from({ length: 42 }).map((_, i) => (
           <div
             key={i}
             className="min-h-[80px] md:min-h-[100px] bg-[#12161A] p-2 flex flex-col justify-between"
