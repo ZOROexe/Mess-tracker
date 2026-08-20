@@ -1,59 +1,54 @@
 "use client";
+
 import Link from "next/link";
-import AuthButton from "./authButton";
-import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
 
 interface Action {
   label: string;
   href: string;
+  variant?: "primary" | "secondary" | "subtle" | "ghost";
 }
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   actions?: Action[];
+  rightElement?: React.ReactNode;
 }
 
 export default function PageHeader({
   title,
   subtitle,
-  actions = []
+  actions = [],
+  rightElement,
 }: PageHeaderProps) {
-  const { data: session } = useSession();
-
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      {/* Title */}
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-white/[0.04] mb-6">
+      {/* Title & Subtitle */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F5F7F8]">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-gray-400">
+          <p className="text-xs sm:text-sm text-[#9AA3AD]">
             {subtitle}
           </p>
         )}
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+      {/* Actions / Right Element */}
+      <div className="flex flex-wrap items-center gap-2.5 sm:justify-end">
         {actions.map((action) => (
-          <Link
-            key={action.href}
-            href={action.href}
-            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 transition"
-          >
-            {action.label}
+          <Link key={action.href} href={action.href}>
+            <Button
+              variant={action.variant || "subtle"}
+              size="sm"
+            >
+              {action.label}
+            </Button>
           </Link>
         ))}
-
-        {session && (
-          <span className="text-sm text-gray-400 max-w-[170px] truncate">
-            {session.user?.email}
-          </span>
-        )}
-
-        <AuthButton />
+        {rightElement}
       </div>
     </div>
   );

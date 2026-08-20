@@ -5,246 +5,281 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessPricingSkeleton } from "@/app/components/Skeletons";
 import { fetchMesses, getMessPrice, saveMessPirce } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 export default function MessPricingPage() {
-    const [messId, setMessId] = useState("");
+  const [messId, setMessId] = useState("");
 
-    const [form, setForm] = useState({
+  const [form, setForm] = useState({
+    breakfast: "",
+    lunch_regular: "",
+    lunch_chicken: "",
+    dinner_regular: "",
+    dinner_chicken: "",
+    effectiveFrom: "",
+  });
+  const queryClient = useQueryClient();
+
+  const {
+    data: messes = [],
+    isLoading: areMessesLoading,
+    error: messesError,
+  } = useQuery({
+    queryKey: ["messes"],
+    queryFn: () => fetchMesses(),
+    staleTime: 60_000,
+  });
+
+  const {
+    data,
+    isLoading: isPricingLoading,
+    isFetching,
+    error,
+  } = useQuery({
+    queryKey: ["mess-price", messId],
+    queryFn: () => getMessPrice(messId),
+    enabled: Boolean(messId),
+    staleTime: 1000000,
+  });
+
+  const {
+    mutate,
+    isSuccess,
+    isPending,
+    error: saveError,
+  } = useMutation({
+    mutationFn: saveMessPirce,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["mess-price", messId],
+      });
+      setForm({
         breakfast: "",
         lunch_regular: "",
         lunch_chicken: "",
         dinner_regular: "",
         dinner_chicken: "",
-        effectiveFrom: ""
-    });
-    const queryClient = useQueryClient();
+        effectiveFrom: "",
+      });
+    },
+    onError: (err) => {
+      console.error("Save failed:", err);
+    },
+  });
 
-    const { data: messes = [], isLoading: areMessesLoading, error: messesError } = useQuery({
-        queryKey: ["messes"],
-        queryFn: () => fetchMesses(),
-        staleTime: 60_000,
-    });
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  }
 
-    const { data, isLoading: isPricingLoading, isFetching, error } = useQuery({
-        queryKey: ['mess-price', messId],
-        queryFn: () => getMessPrice(messId),
-        enabled: Boolean(messId),
-        staleTime: 1000000,
-    })
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const payload = {
+      messId,
+      breakfast: Number(form.breakfast),
+      lunch_regular: Number(form.lunch_regular),
+      lunch_chicken: Number(form.lunch_chicken),
+      dinner_regular: Number(form.dinner_regular),
+      dinner_chicken: Number(form.dinner_chicken),
+      effectiveFrom: form.effectiveFrom,
+    };
+    mutate(payload);
+  }
 
-    const { mutate, isSuccess, isPending, error: saveError } = useMutation({
-        mutationFn: saveMessPirce,
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['mess-price', messId]
-            })
-        },
-        onError: (err) => {
-            console.error("Save failed:", err);
-        },
-    })
+  if (areMessesLoading) {
+    return <MessPricingSkeleton />;
+  }
 
-    function handleChange(
-        e: React.ChangeEvent<HTMLInputElement>
-    ) {
-        setForm((prev) => ({
-        ...prev,
-        [e.target.name]: e.target.value
-        }));
-    }
-
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        const payload = {
-            messId,
-            breakfast: Number(form.breakfast),
-            lunch_regular: Number(form.lunch_regular),
-            lunch_chicken: Number(form.lunch_chicken),
-            dinner_regular: Number(form.dinner_regular),
-            dinner_chicken: Number(form.dinner_chicken),
-            effectiveFrom: form.effectiveFrom
-        };
-        mutate(payload);
-        setForm({
-            breakfast: "",
-            lunch_regular: "",
-            lunch_chicken: "",
-            dinner_regular: "",
-            dinner_chicken: "",
-            effectiveFrom: ""
-        });
-    }
-
-    if (areMessesLoading) {
-        return (
-            <div className="max-w-md mx-auto p-6 space-y-6">
-            <div className="h-6 w-40 bg-white/20 rounded skeleton-shimmer" />
-            <MessPricingSkeleton />
-            </div>
-        );
-    }
-
-    return (
-        <div className="max-w-md mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-semibold tracking-tight text-white">
-                    Mess Pricing
-                    </h1>
-                    <p className="text-sm text-gray-400">
-                    Configure daily mess rates
-                    </p>
-                </div>
-                <Link
-                    href="/settings/messes"
-                    className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition"
-                >
-                    Messes
-                </Link>
-            </div>
-            <div className="space-y-1">
-                <label htmlFor="mess" className="text-sm font-medium text-gray-200">Mess</label>
-                <select
-                    id="mess"
-                    value={messId}
-                    onChange={(event) => setMessId(event.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                >
-                    <option value="" className="text-black">Select a mess</option>
-                    {messes.map((mess) => (
-                        <option key={mess._id} value={mess._id} className="text-black">{mess.name}</option>
-                    ))}
-                </select>
-                {messes.length === 0 && <p className="text-sm text-gray-400">Create a mess before configuring pricing.</p>}
-                {messesError && <p className="text-sm text-red-400">{messesError.message}</p>}
-            </div>
-            {messId && isFetching && <MessPricingSkeleton />}
-            {data && (
-                <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-5 space-y-2">
-                    <p className="text-sm font-medium text-gray-200">
-                    Current Pricing
-                    </p>
-
-                    <div className="text-sm text-gray-300 space-y-1">
-                    <p>Breakfast: ₹{data.breakfast}</p>
-                    <p>Lunch Regular: ₹{data.lunch_regular}</p>
-                    <p>Lunch Chicken: ₹{data.lunch_chicken}</p>
-                    <p>Dinner Regular: ₹{data.dinner_regular}</p>
-                    <p>Dinner Chicken: ₹{data.dinner_chicken}</p>
-                    </div>
-
-                    <p className="text-xs text-gray-400 pt-2">
-                    Effective from {data.effectiveFrom}
-                    </p>
-                </div>
-            )}
-            {messId && <form onSubmit={handleSubmit} className="rounded-2xl bg-white/5 border border-white/10 p-5 space-y-5">
-                <Input
-                label="Breakfast Price"
-                name="breakfast"
-                value={form.breakfast}
-                onChange={handleChange}
-                />
-
-                <Input
-                label="Lunch Regular Price"
-                name="lunch_regular"
-                value={form.lunch_regular}
-                onChange={handleChange}
-                />
-
-                <Input
-                label="Lunch Chicken Price"
-                name="lunch_chicken"
-                value={form.lunch_chicken}
-                onChange={handleChange}
-                />
-
-                <Input
-                label="Dinner Regular Price"
-                name="dinner_regular"
-                value={form.dinner_regular}
-                onChange={handleChange}
-                />
-
-                <Input
-                label="Dinner Chicken Price"
-                name="dinner_chicken"
-                value={form.dinner_chicken}
-                onChange={handleChange}
-                />
-
-                <Input
-                label="Effective From"
-                name="effectiveFrom"
-                type="date"
-                value={form.effectiveFrom}
-                onChange={handleChange}
-                />
-
-                <button
-                type="submit"
-                disabled={isPending}
-                className="
-                        w-full rounded-xl
-                        bg-blue-600
-                        py-2
-                        text-white
-                        font-medium
-                        hover:bg-blue-700
-                        disabled:opacity-60
-                        transition
-                    "
-                >
-                {isPricingLoading || isPending ? "Saving..." : "Save Pricing"}
-                </button>
-
-                {isSuccess && (
-                    <p className="text-sm text-green-400">
-                        Pricing updated successfully
-                    </p>
-                    )}
-
-                    {error && (
-                    <p className="text-sm text-red-400">{error.message}</p>
-                    )}
-
-                    {saveError && (
-                    <p className="text-sm text-red-400">{saveError.message}</p>
-                )}
-            </form>
-            }
+  return (
+    <div className="max-w-xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F5F7F8]">
+            Fixed Mess Pricing
+          </h1>
+          <p className="text-xs sm:text-sm text-[#9AA3AD] mt-0.5">
+            Configure standard meal rates with effective dates
+          </p>
         </div>
-    );
-    }
+        <Link href="/settings/messes">
+          <Button variant="subtle" size="sm">
+            Manage Messes
+          </Button>
+        </Link>
+      </div>
 
-    function Input({
-    label,
-    ...props
-    }: React.InputHTMLAttributes<HTMLInputElement> & {
-    label: string;
-    }) {
-    return (
-        <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wide text-gray-400">
-                {label}
-            </label>
-            <input
-                {...props}
-                required
-                className="
-                w-full rounded-xl
-                bg-white/10
-                border border-white/10
-                px-3 py-2
-                text-white
-                placeholder-gray-500
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500/50
-                transition
-                "
+      {/* Mess Selector */}
+      <div className="space-y-1.5">
+        <Select
+          label="Select Mess"
+          id="mess"
+          value={messId}
+          onChange={(event) => setMessId(event.target.value)}
+        >
+          <option value="" className="text-black">
+            Choose a mess to configure
+          </option>
+          {messes.map((mess) => (
+            <option key={mess._id} value={mess._id} className="text-black">
+              {mess.name}
+            </option>
+          ))}
+        </Select>
+        {messes.length === 0 && (
+          <p className="text-xs text-[#9AA3AD]">
+            Create a mess before configuring pricing.
+          </p>
+        )}
+        {messesError && (
+          <p className="text-xs text-[#F87171]">{messesError.message}</p>
+        )}
+      </div>
+
+      {messId && isFetching && <MessPricingSkeleton />}
+
+      {/* Current Pricing Card */}
+      {data && (
+        <Card variant="elevated" className="space-y-2">
+          <CardHeader>
+            <CardTitle>Current Rates</CardTitle>
+            <p className="text-xs text-[#68717C]">
+              Effective since {data.effectiveFrom}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#9AA3AD]">
+              <div className="p-2 rounded bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-wider text-[#68717C]">Breakfast</p>
+                <p className="text-sm font-semibold text-[#F5F7F8] tabular-nums">₹{data.breakfast}</p>
+              </div>
+              <div className="p-2 rounded bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-wider text-[#68717C]">Lunch (Reg)</p>
+                <p className="text-sm font-semibold text-[#F5F7F8] tabular-nums">₹{data.lunch_regular}</p>
+              </div>
+              <div className="p-2 rounded bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-wider text-[#68717C]">Lunch (Chk)</p>
+                <p className="text-sm font-semibold text-[#F5F7F8] tabular-nums">₹{data.lunch_chicken}</p>
+              </div>
+              <div className="p-2 rounded bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-wider text-[#68717C]">Dinner (Reg)</p>
+                <p className="text-sm font-semibold text-[#F5F7F8] tabular-nums">₹{data.dinner_regular}</p>
+              </div>
+              <div className="p-2 rounded bg-white/[0.02]">
+                <p className="text-[10px] uppercase tracking-wider text-[#68717C]">Dinner (Chk)</p>
+                <p className="text-sm font-semibold text-[#F5F7F8] tabular-nums">₹{data.dinner_chicken}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pricing Form */}
+      {messId && (
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-xl bg-[#12161A] border border-white/[0.08] p-5 sm:p-6 space-y-4"
+        >
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#9AA3AD]">
+            Update Rates
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Breakfast Price"
+              name="breakfast"
+              type="number"
+              min="0"
+              required
+              value={form.breakfast}
+              onChange={handleChange}
+              leftElement={<span className="text-xs">₹</span>}
             />
-        </div>
-    );
+            <Input
+              label="Lunch Regular Price"
+              name="lunch_regular"
+              type="number"
+              min="0"
+              required
+              value={form.lunch_regular}
+              onChange={handleChange}
+              leftElement={<span className="text-xs">₹</span>}
+            />
+            <Input
+              label="Lunch Chicken Price"
+              name="lunch_chicken"
+              type="number"
+              min="0"
+              required
+              value={form.lunch_chicken}
+              onChange={handleChange}
+              leftElement={<span className="text-xs">₹</span>}
+            />
+            <Input
+              label="Dinner Regular Price"
+              name="dinner_regular"
+              type="number"
+              min="0"
+              required
+              value={form.dinner_regular}
+              onChange={handleChange}
+              leftElement={<span className="text-xs">₹</span>}
+            />
+            <Input
+              label="Dinner Chicken Price"
+              name="dinner_chicken"
+              type="number"
+              min="0"
+              required
+              value={form.dinner_chicken}
+              onChange={handleChange}
+              leftElement={<span className="text-xs">₹</span>}
+            />
+            <Input
+              label="Effective From"
+              name="effectiveFrom"
+              type="date"
+              required
+              value={form.effectiveFrom}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              className="w-full font-semibold"
+              disabled={isPending || isPricingLoading}
+              isLoading={isPending}
+            >
+              {isPending ? "Saving..." : "Save Pricing Rates"}
+            </Button>
+          </div>
+
+          {isSuccess && (
+            <p className="text-xs text-[#2DD4BF] bg-[#2DD4BF]/10 p-3 rounded-lg border border-[#2DD4BF]/20">
+              Pricing updated successfully
+            </p>
+          )}
+          {error && (
+            <p className="text-xs text-[#F87171] bg-[#F87171]/10 p-3 rounded-lg border border-[#F87171]/20">
+              {error.message}
+            </p>
+          )}
+          {saveError && (
+            <p className="text-xs text-[#F87171] bg-[#F87171]/10 p-3 rounded-lg border border-[#F87171]/20">
+              {saveError.message}
+            </p>
+          )}
+        </form>
+      )}
+    </div>
+  );
 }

@@ -1,33 +1,56 @@
 "use client";
-import { useRouter } from "next/navigation";
 
-interface props {
-    onPress: () => void;
-    onClose: () => void;
+import { useRouter } from "next/navigation";
+import { Dialog, DialogFooter } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+
+interface Props {
+  onPress: () => void;
+  onClose: () => void;
 }
 
-export default function LoginModal({onPress, onClose}: props) {
-    const router = useRouter();
+export default function LoginModal({ onClose }: Props) {
+  const router = useRouter();
 
-    return (
-        <div className="bg-white p-6 rounded-2xl space-y-4 max-w-sm text-black animate-[scaleIn_0.15s_ease-out]">
-            <p className="text-sm text-gray-600">
-                Login to track meals and see your monthly summary.
-            </p>
-
-            <button
-                onClick={() => router.push("/login?callbackUrl=/")}
-                className="w-full rounded-xl bg-black py-2 text-white hover:bg-gray-800 transition"
-            >
-                Continue with Google
-            </button>
-
-            <button
-                onClick={onClose}
-                className="w-full text-sm text-gray-500 hover:text-gray-700"
-            >
-                Maybe later
-            </button>
+  return (
+    <Dialog
+      isOpen={true}
+      onClose={onClose}
+      title="Track Your Meals"
+      description="Sign in to record your daily food entries and track your monthly budget."
+      maxWidth="sm"
+    >
+      <div className="space-y-4 pt-1">
+        <div className="p-3.5 rounded-xl bg-[#12161A] border border-white/[0.06] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#2DD4BF]/10 border border-[#2DD4BF]/20 flex items-center justify-center text-[#2DD4BF] shrink-0">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-xs text-[#9AA3AD]">
+            Your entries and messes will be securely synced with your Google account.
+          </p>
         </div>
-    )
+
+        <Button
+          variant="primary"
+          size="md"
+          className="w-full font-semibold"
+          onClick={() => router.push("/login?callbackUrl=/")}
+        >
+          Continue with Google
+        </Button>
+
+        <DialogFooter className="justify-center border-t-0 pt-0 mt-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[#68717C] hover:text-[#9AA3AD] transition-colors"
+          >
+            Maybe later
+          </button>
+        </DialogFooter>
+      </div>
+    </Dialog>
+  );
 }
